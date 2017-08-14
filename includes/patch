@@ -1,3 +1,0 @@
-175,176c
-			$node_templates[$templ] = $desc.'.missing'  ;
-.
