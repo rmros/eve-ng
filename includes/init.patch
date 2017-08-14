@@ -1,0 +1,20 @@
+*** init.php	2017-08-12 20:42:53.919094882 +0000
+--- init.php.1	2017-08-12 20:27:06.700863301 +0000
+*************** if (!isset($node_templates)) {
+*** 172,179 ****
+  			}
+  		}
+  		if ( $found == 0 )  {
+! 		//	$node_templates[$templ] = $desc.'.missing'  ;
+! 			unset($node_templates[$templ]);
+  		}
+  			
+  	}
+--- 172,178 ----
+  			}
+  		}
+  		if ( $found == 0 )  {
+! 			$node_templates[$templ] = $desc.'.missing'  ;
+  		}
+  			
+  	}

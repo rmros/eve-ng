@@ -1,0 +1,12 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\vnc]
+@="URL:VNC Protocol"
+"URL Protocol"=""
+
+[HKEY_CLASSES_ROOT\vnc\shell]
+
+[HKEY_CLASSES_ROOT\vnc\shell\open]
+
+[HKEY_CLASSES_ROOT\vnc\shell\open\command]
+@="\"C:\\Program Files\\EVE-NG\\ultravnc_wrapper.bat\" %1"
