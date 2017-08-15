@@ -31,7 +31,7 @@ function addBridge($s) {
 	}
 
 	$cmd = 'ip link set dev '.$s['name'].' up 2>&1';
- 	error_log(date('M d H:i:s ').'INFO: starting '.$cmd);	
+	error_log(date('M d H:i:s ').'INFO: starting '.$cmd);	
 	exec($cmd, $o, $rc);
 	if ($rc != 0) {
 		// Failed to activate it
@@ -62,20 +62,20 @@ function addBridge($s) {
 		}
 	} 
 	if ( $s['count'] < 3 ) {
-	        $cmd = 'brctl setageing '.$s['name'].' 0 2>&1';
-                exec($cmd, $o, $rc);
-                if ($rc != 0) {
-                        error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80055]);
-                        error_log(date('M d H:i:s ').implode("\n", $o));
-                        return 80055;
-                }
-                $cmd = 'echo 2 > /sys/class/net/'.$s['name'].'/bridge/multicast_router  2>&1';
-                exec($cmd, $o, $rc);
-                if ($rc != 0) {
-                        error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80055]);
-                        error_log(date('M d H:i:s ').implode("\n", $o));
-                        return 80055;
-                }
+		$cmd = 'brctl setageing '.$s['name'].' 0 2>&1';
+		exec($cmd, $o, $rc);
+		if ($rc != 0) {
+			error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80055]);
+			error_log(date('M d H:i:s ').implode("\n", $o));
+			return 80055;
+		}
+		$cmd = 'echo 2 > /sys/class/net/'.$s['name'].'/bridge/multicast_router  2>&1';
+		exec($cmd, $o, $rc);
+		if ($rc != 0) {
+			error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80055]);
+			error_log(date('M d H:i:s ').implode("\n", $o));
+			return 80055;
+		}
 	}
 
 	return 0;
@@ -176,14 +176,14 @@ function addOvs($s) {
 	// ADD BPDU CDP option
 	$cmd = "ovs-vsctl set bridge ".$s." other-config:forward-bpdu=true";
 	exec($cmd, $o, $rc);
-        if ($rc == 0) {
-                return 0;
-        } else {
-                // Failed to add  OVS OPTION
-                error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80023]);
-                error_log(date('M d H:i:s ').implode("\n", $o));
-                return 80023;
-        }
+	if ($rc == 0) {
+		return 0;
+	} else {
+		// Failed to add  OVS OPTION
+		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80023]);
+		error_log(date('M d H:i:s ').implode("\n", $o));
+		return 80023;
+	}
 
 }
 
@@ -309,7 +309,7 @@ function connectInterface($n, $p) {
 		} else {
 			// Failed to add interface to Bridge
 			//error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80030]);
-		//	error_log(date('M d H:i:s ').implode("\n", $o));
+			//	error_log(date('M d H:i:s ').implode("\n", $o));
 			return 80030;
 		}
 	} else if (isOvs($n)) {
@@ -422,7 +422,7 @@ function dumpConfig($config_data, $file_path) {
 		return False;
 	}
 
-    return True;
+	return True;
 }
 
 /**
@@ -496,14 +496,14 @@ function export($node_id, $n, $lab , $uid ) {
 				error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80066].'for iolID '.(( $node_id & 0x3f ) << 4 | ( $uid & 0xf)) );
 				return 80066;
 			}
-                        $cmd='/opt/unetlab/scripts/wrconf_iol.py -p '.$n -> getPort().' -t 15';
-                        exec($cmd, $o, $rc);
-                        error_log(date('M d H:i:s ').'INFO: force write configuration '.$cmd);
-                        if ($rc != 0) {
-                                error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80060]);
-                                error_log(date('M d H:i:s ').(string) $o);
-                                return 80060;
-                        }
+			$cmd='/opt/unetlab/scripts/wrconf_iol.py -p '.$n -> getPort().' -t 15';
+			exec($cmd, $o, $rc);
+			error_log(date('M d H:i:s ').'INFO: force write configuration '.$cmd);
+			if ($rc != 0) {
+				error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80060]);
+				error_log(date('M d H:i:s ').(string) $o);
+				return 80060;
+			}
 			$cmd = '/opt/unetlab/scripts/iou_export '.$nvram.' '.$tmp;
 			exec($cmd, $o, $rc);
 			usleep(1);
@@ -522,11 +522,11 @@ function export($node_id, $n, $lab , $uid ) {
 				error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][80084]);
 				return 80084;
 			} else {
-			    $timeout = 15;
-			    // Depending on configuration's size, export from mikrotik could take longer than 15 seconds
-			    if ($n -> getTemplate() == 'mikrotik') {
-			        $timeout = 45;
-			    }
+				$timeout = 15;
+				// Depending on configuration's size, export from mikrotik could take longer than 15 seconds
+				if ($n -> getTemplate() == 'mikrotik') {
+					$timeout = 45;
+				}
 				$cmd = '/opt/unetlab/scripts/'.$GLOBALS['node_config'][$n -> getTemplate()].' -a get -p '.$n -> getPort().' -f '.$tmp.' -t '.$timeout;
 				exec($cmd, $o, $rc);
 				error_log(date('M d H:i:s ').'INFO: exporting '.$cmd);
@@ -560,7 +560,7 @@ function export($node_id, $n, $lab , $uid ) {
 		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80065]);
 		return 80065;
 	}
-	
+
 	if ($lab -> setNodeConfigData($node_id, $config_data) !== 0) {
 		// Failed to save startup-config
 		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80063]);
@@ -697,7 +697,7 @@ function prepareNode($n, $id, $t, $nets) {
 			// Failed to add TAP interface
 			return $rc;
 		}
-		 error_log(date('M d H:i:s ').'INFO: starting er'.$interface -> getNetworkId());
+		error_log(date('M d H:i:s ').'INFO: starting er'.$interface -> getNetworkId());
 		if ($interface -> getNetworkId() !== 0) {
 			// Connect interface to network
 			$rc = connectInterface($net_name, $tap_name);
@@ -763,7 +763,7 @@ function prepareNode($n, $id, $t, $nets) {
 				}
 
 				$cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format="{{ .State.Running }}" '.$n -> getUuid();
-				
+
 				exec($cmd, $o, $rc);
 				if ($rc != 0) {
 					// Must create docker.io container
@@ -778,9 +778,9 @@ function prepareNode($n, $id, $t, $nets) {
 				break;
 			case 'vpcs':
 				if (!is_file('/opt/vpcsu/bin/vpcs')) {
-                                        error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80088]);
-                                        return 80082;
-                                }
+					error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80088]);
+					return 80082;
+				}
 				break;
 			case 'dynamips':
 				// Nothing to do
@@ -836,20 +836,20 @@ function prepareNode($n, $id, $t, $nets) {
 					case 'csr1000v':
 					case 'csr1000vng':
 						copy (  $n -> getRunningPath().'/startup-config',  $n -> getRunningPath().'/iosxe_config.txt');
-	                                        $isocmd = 'mkisofs -o '.$n -> getRunningPath().'/config.iso -l --iso-level 2 '.$n -> getRunningPath().'/iosxe_config.txt' ;
-        	                                exec($isocmd, $o, $rc);
+						$isocmd = 'mkisofs -o '.$n -> getRunningPath().'/config.iso -l --iso-level 2 '.$n -> getRunningPath().'/iosxe_config.txt' ;
+						exec($isocmd, $o, $rc);
 						break;
 					case 'asav':
 						copy (  $n -> getRunningPath().'/startup-config',  $n -> getRunningPath().'/day0-config');
 						$isocmd = 'mkisofs -r -o '.$n -> getRunningPath().'/config.iso -l --iso-level 2 '.$n -> getRunningPath().'/day0-config' ;
 						exec($isocmd, $o, $rc);
 						break;
-                                        case 'titanium':
-                                        case 'nxosv9k':
-                                                copy (  $n -> getRunningPath().'/startup-config',  $n -> getRunningPath().'/nxos_config.txt');
-                                                $isocmd = 'mkisofs -o '.$n -> getRunningPath().'/config.iso -l --iso-level 2 '.$n -> getRunningPath().'/nxos_config.txt' ;
-                                                exec($isocmd, $o, $rc);
-                                                break;
+					case 'titanium':
+					case 'nxosv9k':
+						copy (  $n -> getRunningPath().'/startup-config',  $n -> getRunningPath().'/nxos_config.txt');
+						$isocmd = 'mkisofs -o '.$n -> getRunningPath().'/config.iso -l --iso-level 2 '.$n -> getRunningPath().'/nxos_config.txt' ;
+						exec($isocmd, $o, $rc);
+						break;
 					case 'timos':
 					case 'timoscpm':
 						$floppycmd = 'mkdosfs -C '.$n ->  getRunningPath().'/floppy.img 1440';
@@ -865,8 +865,8 @@ function prepareNode($n, $id, $t, $nets) {
 					case 'vios':
 					case 'viosl2':
 						copy (  $n -> getRunningPath().'/startup-config',  $n -> getRunningPath().'/ios_config.txt');
-	                                        $diskcmd = '/opt/unetlab/scripts/createdosdisk.sh '.$n -> getRunningPath() ;
-        	                                exec($diskcmd, $o, $rc);
+						$diskcmd = '/opt/unetlab/scripts/createdosdisk.sh '.$n -> getRunningPath() ;
+						exec($diskcmd, $o, $rc);
 						break;
 					case 'vsrxng':
 					case 'vmxvcp':
@@ -876,7 +876,7 @@ function prepareNode($n, $id, $t, $nets) {
 						copy (  $n -> getRunningPath().'/startup-config',  $n -> getRunningPath().'/juniper.conf');
 						$isocmd = 'mkisofs -o '.$n -> getRunningPath().'/config.iso -l --iso-level 2 '.$n -> getRunningPath().'/juniper.conf' ;
 						exec($isocmd, $o, $rc);
-                                                break;
+						break;
 					case 'veos':
 						$diskcmd = '/opt/unetlab/scripts/veos_diskmod.sh '.$n -> getRunningPath() ;
 						exec($diskcmd, $o, $rc);
@@ -976,7 +976,7 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 	// Special Case for xrv - csr1000v - vIOS - vIOSL - Docker
 	if (( $n->getTemplate() == 'xrv' || $n->getTemplate() == 'xrv9k' || $n->getTemplate() == 'csr1000vng' || $n->getTemplate() == 'csr1000v' || $n->getTemplate() == 'asav' || $n->getTemplate() == 'titanium' )  && is_file($n -> getRunningPath().'/config.iso') && !is_file($n -> getRunningPath().'/.configured') && $n -> getConfig() != 0)  {
 		$flags .= ' -cdrom config.iso' ;
-        }
+	}
 
 	if (( $n->getTemplate() == 'vios'  || $n->getTemplate() == 'viosl2') && is_file($n -> getRunningPath().'/minidisk') && !is_file($n -> getRunningPath().'/.configured') && $n -> getConfig() != 0)  {
 		$flags .= ' -drive file=minidisk,if=virtio,bus=0,unit=1,cache=none' ;
@@ -986,24 +986,24 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 		$flags .= ' -drive file=config.iso,if=virtio,media=cdrom,index=2' ;
 	}
 
-        if ((  $n->getTemplate() == 'vsrxng' ) && is_file($n -> getRunningPath().'/config.iso') && !is_file($n -> getRunningPath().'/.configured') && $n -> getConfig() != 0)  {
-                $flags .= ' -drive file=config.iso,if=ide,media=cdrom,index=2' ;
-        }
+	if ((  $n->getTemplate() == 'vsrxng' ) && is_file($n -> getRunningPath().'/config.iso') && !is_file($n -> getRunningPath().'/.configured') && $n -> getConfig() != 0)  {
+		$flags .= ' -drive file=config.iso,if=ide,media=cdrom,index=2' ;
+	}
 
-        if ((  $n->getTemplate() == 'vmxvcp' ) && is_file($n -> getRunningPath().'/config.iso') && !is_file($n -> getRunningPath().'/.configured') && $n -> getConfig() != 0)  {
-                $flags .= ' -drive file=config.iso,if=ide,media=cdrom,index=3' ;
-        }
+	if ((  $n->getTemplate() == 'vmxvcp' ) && is_file($n -> getRunningPath().'/config.iso') && !is_file($n -> getRunningPath().'/.configured') && $n -> getConfig() != 0)  {
+		$flags .= ' -drive file=config.iso,if=ide,media=cdrom,index=3' ;
+	}
 
-        if ((  $n->getTemplate() == 'nxosv9k' ) && is_file($n -> getRunningPath().'/config.iso') && !is_file($n -> getRunningPath().'/.configured') && $n -> getConfig() != 0)  {
-                $flags .= ' -drive file=config.iso,if=ide,media=cdrom,index=3' ;
-        }
+	if ((  $n->getTemplate() == 'nxosv9k' ) && is_file($n -> getRunningPath().'/config.iso') && !is_file($n -> getRunningPath().'/.configured') && $n -> getConfig() != 0)  {
+		$flags .= ' -drive file=config.iso,if=ide,media=cdrom,index=3' ;
+	}
 
 	if (( $n -> getTemplate() == 'pfsense')   && is_file($n -> getRunningPath().'/config.iso') && !is_file($n -> getRunningPath().'/.configured') && $n -> getConfig() != 0)  {
 		$flags .= ' -cdrom config.iso' ;
 	}
-        if (( $n -> getTemplate() == 'timos' || $n -> getTemplate() == 'timoscpm' )   && is_file($n -> getRunningPath().'/floppy.img') && !is_file($n -> getRunningPath().'/.configured') && $n -> getConfig() != 0)  {
+	if (( $n -> getTemplate() == 'timos' || $n -> getTemplate() == 'timoscpm' )   && is_file($n -> getRunningPath().'/floppy.img') && !is_file($n -> getRunningPath().'/.configured') && $n -> getConfig() != 0)  {
 		$flags = preg_replace('/Timos:/','Timos: primary-config=cf1:config.cfg ',$flags) ;
-                $flags .= ' -hdb floppy.img' ;
+		$flags .= ' -hdb floppy.img' ;
 	}
 	if ( $n -> getNType() != 'docker' && $n -> getNType() != 'vpcs')  {
 		$cmd .= ' -- '.$flags.' > '.$n -> getRunningPath().'/wrapper.txt 2>&1 &';
@@ -1012,12 +1012,12 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 	if ( $n -> getNType() == 'vpcs')  {
 		$cmd .= $flags.' > '.$n -> getRunningPath().'/wrapper.txt 2>&1 &';
 	}
-	
+
 
 	error_log(date('M d H:i:s ').'INFO: CWD is '.getcwd());
 	error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
-        // Clean TCP port
-        exec("fuser -k -n tcp ".(32768 + 128 * $t + $id));
+	// Clean TCP port
+	exec("fuser -k -n tcp ".(32768 + 128 * $t + $id));
 	exec($cmd, $o, $rc);
 
 	if ($rc == 0 && $n -> getNType() == 'qemu' && is_file($n -> getRunningPath().'/startup-config') && !is_file($n -> getRunningPath().'/.configured') && $n -> getConfig() != 0 ) {
@@ -1027,61 +1027,67 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 		exec($cmd, $o, $rc);
 		error_log(date('M d H:i:s ').'INFO: importing '.$cmd);
 	}
-
+	/*
+	 Network initialization of docker network
+	 eth0 is attached to the docker0 interface and is used for management E.G VNC
+	
+	 Each subsequent interface will available to be attached to other nodes/networks in the web interface
+	 eth1 will be the first available interface
+	
+	*/
 	if ($rc == 0 && $n -> getNType() == 'docker') {
+
+		// Note: should be able to reuse connectInterface function to replace most of the code below
 		// Need to configure each interface
 		foreach ($n -> getEthernets() as $interface_id => $interface) {
-		
 
-
-
-	
-			// new code block test
-
-			
-
-			// ip link set dev vnet3_4_5 up
-                       // $cmd = 'ip link set dev vnet'.$t.'_'.$id.'_'.$interface_id.' up';
-                       // error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
-                       // exec($cmd, $o, $rc);
-
-			// TODO must check each step against errors
-			// ip link add docker3_4_5 type veth peer name vnet3_4_5
+			// create interface which will be attached to docker instance
+			// ip link add docker0_1_0 type veth peer name vnet0_1_0 
 			$cmd = 'ip link add docker'.$t.'_'.$id.'_'.$interface_id.' type veth peer name vnet'.$t.'_'.$id.'_'.$interface_id;
 			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
 			exec($cmd, $o, $rc);
-		
-                        // bridge docker interface
+
+			
+			// We know our own interface
 			$tap_name = 'vnet'.$t.'_'.$id.'_'.$interface_id;
-                        if (isset($nets[$interface -> getNetworkId()]) && $nets[$interface -> getNetworkId()] -> isCloud()) {
-                        // Network is a Cloud
-                                $net_name = $nets[$interface -> getNetworkId()] -> getNType();
-                        } else {
-                                $net_name = 'vnet'.$t.'_'.$interface -> getNetworkId();
-                        }
-                        if ($interface -> getNetworkId() !== 0) {
-                        // Connect interface to network
-                      		$cmd = 'brctl addif '.$net_name.' '.$tap_name;
-               	       		error_log(date('M d H:i:s ').'INFO: starting cI'.$cmd);
-                		exec($cmd, $o, $rc);
+			
+
+			// For the peer which we bridge to we need to find the peer interface name
+			if (isset($nets[$interface -> getNetworkId()]) && $nets[$interface -> getNetworkId()] -> isCloud()) {
+				// Network is a Cloud
+				$net_name = $nets[$interface -> getNetworkId()] -> getNType();
+			} else {
+				$net_name = 'vnet'.$t.'_'.$interface -> getNetworkId();
+			}
+
+			// Here we brdige the interfaces
+			if ($interface -> getNetworkId() !== 0) {
+				// Connect interface to network
+				$cmd = 'brctl addif '.$net_name.' '.$tap_name;
+				error_log(date('M d H:i:s ').'INFO: starting cI'.$cmd);
+				exec($cmd, $o, $rc);
 			}
 
 
-
-
-
-			// ip link set dev vnet3_4_5 up
+			// set interface status to up
 			$cmd = 'ip link set dev vnet'.$t.'_'.$id.'_'.$interface_id.' up';
 			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
 			exec($cmd, $o, $rc);
-			
+
+			// We need to attach our interface to our docker instance
+			// For that, we grab the pid
 			$cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format "{{ .State.Pid }}" '.$n -> getUuid();
 			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
 			exec($cmd, $o, $rc);
+			
+			// Here we use the pid from above and attach it to the docker container
 			// ip link set netns ${PID} docker3_4_5 name eth0 address 22:ce:e0:99:04:05 up
 			$cmd = 'ip link set netns '.$o[1].' docker'.$t.'_'.$id.'_'.$interface_id.' name eth'.($interface_id+1).' address '.'50:'.sprintf('%02x', $t).':'.sprintf('%02x', $id / 512).':'.sprintf('%02x', $id % 512).':00:'.sprintf('%02x', $interface_id).' up';
 			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
 			exec($cmd, $o, $rc);
+
+
+			// can be used if you wish to add routes
 			// /opt/unetlab/wrappers/nsenter -t ${PID} -n ip addr add 1.1.1.1/24 dev eth0
 			// /opt/unetlab/wrappers/nsenter -t ${PID} -n ip route add default via 1.1.1.254
 		}
@@ -1112,11 +1118,11 @@ function stop($n) {
 		}
 		error_log(date('M d H:i:s ').'INFO: stopping '.$cmd);
 		exec($cmd, $o, $rc);
-	            // DELETE SNAT RULE RDP if needed
-                if ( $n -> getConsole() == 'rdp' ) {
-                        $cmd = 'iptables -t nat -D INPUT -p tcp --dport '.$n -> getPort().' -j SNAT --to 169.254.1.102' ;
-                        exec($cmd, $o, $rc);
-                }
+		// DELETE SNAT RULE RDP if needed
+		if ( $n -> getConsole() == 'rdp' ) {
+			$cmd = 'iptables -t nat -D INPUT -p tcp --dport '.$n -> getPort().' -j SNAT --to 169.254.1.102' ;
+			exec($cmd, $o, $rc);
+		}
 
 		if ($rc  == 0) {
 			return 0;
