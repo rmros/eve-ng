@@ -761,13 +761,24 @@ function prepareNode($n, $id, $t, $nets) {
 					error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80082]);
 					return 80082;
 				}
+				
+				
+				if ($n -> getConsole() == 'vnc') {
+					$connPort = 5900;
+				}
 
+				elseif ($n -> getConsole() == 'rdp' ) {
+					$connPort = 3389;
+				}
+				else {
+					$connPort = 23;
+				}
 				$cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format="{{ .State.Running }}" '.$n -> getUuid();
 
 				exec($cmd, $o, $rc);
 				if ($rc != 0) {
 					// Must create docker.io container
-					$cmd = 'docker -H=tcp://127.0.0.1:4243 create -ti --privileged --net=bridge -p '.$n -> getPort().':5900 --name='.$n -> getUuid().' -h '.$n -> getName().' '.$n -> getImage();
+					$cmd = 'docker -H=tcp://127.0.0.1:4243 create -ti --privileged --net=bridge -p '.$n -> getPort().':'.$connPort.' --name='.$n -> getUuid().' -h '.$n -> getName().' '.$n -> getImage();
 					exec($cmd, $o, $rc);
 					if ($rc != 0) {
 						// Failed to create container
