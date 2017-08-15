@@ -21,6 +21,7 @@
  */
 function addBridge($s) {
 	$cmd = 'brctl addbr '.$s['name'].' 2>&1';
+	error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
 	exec($cmd, $o, $rc);
 	if ($rc != 0) {
 		// Failed to add the bridge
@@ -30,6 +31,7 @@ function addBridge($s) {
 	}
 
 	$cmd = 'ip link set dev '.$s['name'].' up 2>&1';
+ 	error_log(date('M d H:i:s ').'INFO: starting '.$cmd);	
 	exec($cmd, $o, $rc);
 	if ($rc != 0) {
 		// Failed to activate it
@@ -80,7 +82,7 @@ function addBridge($s) {
 }
 
 /**
- * Function to stop a node.
+ * Function to add a network.
  *
  * @param   Array   $p                  Parameters
  * @return  int                         0 means ok
@@ -300,13 +302,14 @@ function checkUsername($i) {
 function connectInterface($n, $p) {
 	if (isBridge($n)) {
 		$cmd = 'brctl addif '.$n.' '.$p.' 2>&1';
+		error_log(date('M d H:i:s ').'INFO: starting cI'.$cmd);
 		exec($cmd, $o, $rc);
 		if ($rc == 0) {
 			return 0;
 		} else {
 			// Failed to add interface to Bridge
-			error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80030]);
-			error_log(date('M d H:i:s ').implode("\n", $o));
+			//error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80030]);
+		//	error_log(date('M d H:i:s ').implode("\n", $o));
 			return 80030;
 		}
 	} else if (isOvs($n)) {
@@ -694,7 +697,7 @@ function prepareNode($n, $id, $t, $nets) {
 			// Failed to add TAP interface
 			return $rc;
 		}
-
+		 error_log(date('M d H:i:s ').'INFO: starting er'.$interface -> getNetworkId());
 		if ($interface -> getNetworkId() !== 0) {
 			// Connect interface to network
 			$rc = connectInterface($net_name, $tap_name);
@@ -764,7 +767,7 @@ function prepareNode($n, $id, $t, $nets) {
 				exec($cmd, $o, $rc);
 				if ($rc != 0) {
 					// Must create docker.io container
-					$cmd = 'docker -H=tcp://127.0.0.1:4243 create -ti --net=bridge -p '.$n -> getPort().':5900 --name='.$n -> getUuid().' -h '.$n -> getName().' '.$n -> getImage();
+					$cmd = 'docker -H=tcp://127.0.0.1:4243 create -ti --privileged --net=bridge -p '.$n -> getPort().':5900 --name='.$n -> getUuid().' -h '.$n -> getName().' '.$n -> getImage();
 					exec($cmd, $o, $rc);
 					if ($rc != 0) {
 						// Failed to create container
@@ -1028,25 +1031,55 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 	if ($rc == 0 && $n -> getNType() == 'docker') {
 		// Need to configure each interface
 		foreach ($n -> getEthernets() as $interface_id => $interface) {
+		
+
+
+
+	
+			// new code block test
+
+			
+
+			// ip link set dev vnet3_4_5 up
+                       // $cmd = 'ip link set dev vnet'.$t.'_'.$id.'_'.$interface_id.' up';
+                       // error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
+                       // exec($cmd, $o, $rc);
+
 			// TODO must check each step against errors
 			// ip link add docker3_4_5 type veth peer name vnet3_4_5
 			$cmd = 'ip link add docker'.$t.'_'.$id.'_'.$interface_id.' type veth peer name vnet'.$t.'_'.$id.'_'.$interface_id;
 			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
 			exec($cmd, $o, $rc);
+		
+                        // bridge docker interface
+			$tap_name = 'vnet'.$t.'_'.$id.'_'.$interface_id;
+                        if (isset($nets[$interface -> getNetworkId()]) && $nets[$interface -> getNetworkId()] -> isCloud()) {
+                        // Network is a Cloud
+                                $net_name = $nets[$interface -> getNetworkId()] -> getNType();
+                        } else {
+                                $net_name = 'vnet'.$t.'_'.$interface -> getNetworkId();
+                        }
+                        if ($interface -> getNetworkId() !== 0) {
+                        // Connect interface to network
+                      		$cmd = 'brctl addif '.$net_name.' '.$tap_name;
+               	       		error_log(date('M d H:i:s ').'INFO: starting cI'.$cmd);
+                		exec($cmd, $o, $rc);
+			}
+
+
+
+
+
 			// ip link set dev vnet3_4_5 up
 			$cmd = 'ip link set dev vnet'.$t.'_'.$id.'_'.$interface_id.' up';
 			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
 			exec($cmd, $o, $rc);
-			// brctl addif vnet0_1 vnet3_4_5
-			$cmd = 'brctl addif vnet'.$t.'_'.$interface -> getNetworkId().'  vnet'.$t.'_'.$id.'_'.$interface_id;
-			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
-			exec($cmd, $o, $rc);
-			// PID=$(docker inspect --format '{{ .State.Pid }}' docker3_4) # Must be greater than 0
+			
 			$cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format "{{ .State.Pid }}" '.$n -> getUuid();
 			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
 			exec($cmd, $o, $rc);
 			// ip link set netns ${PID} docker3_4_5 name eth0 address 22:ce:e0:99:04:05 up
-			$cmd = 'ip link set netns '.$o[1].' docker'.$t.'_'.$id.'_'.$interface_id.' name eth0 address '.'50:'.sprintf('%02x', $t).':'.sprintf('%02x', $id / 512).':'.sprintf('%02x', $id % 512).':00:'.sprintf('%02x', $interface_id).' up';
+			$cmd = 'ip link set netns '.$o[1].' docker'.$t.'_'.$id.'_'.$interface_id.' name eth'.($interface_id+1).' address '.'50:'.sprintf('%02x', $t).':'.sprintf('%02x', $id / 512).':'.sprintf('%02x', $id % 512).':00:'.sprintf('%02x', $interface_id).' up';
 			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
 			exec($cmd, $o, $rc);
 			// /opt/unetlab/wrappers/nsenter -t ${PID} -n ip addr add 1.1.1.1/24 dev eth0
