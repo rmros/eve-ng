@@ -778,7 +778,8 @@ function prepareNode($n, $id, $t, $nets) {
 				exec($cmd, $o, $rc);
 				if ($rc != 0) {
 					// Must create docker.io container
-					$cmd = 'docker -H=tcp://127.0.0.1:4243 create -ti --privileged --net=bridge -p '.$n -> getPort().':'.$connPort.' --name='.$n -> getUuid().' -h '.$n -> getName().' '.$n -> getImage();
+					$cmd = 'docker -H=tcp://127.0.0.1:4243 create -ti --memory '.$n -> getRam().'M --privileged --net=bridge -p '.$n -> getPort().':'.$connPort.' --name='.$n -> getUuid().' -h '.$n -> getName().' '.$n -> getImage();
+					error_log(date('M d H:i:s ').'INFO: starting '.$cmd);		
 					exec($cmd, $o, $rc);
 					if ($rc != 0) {
 						// Failed to create container
@@ -969,6 +970,7 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 			break;
 		case 'docker':
 			$cmd = 'docker -H=tcp://127.0.0.1:4243 start '.$n -> getUuid();
+			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
 			break;
 		case 'vpcs':
 			$cmd ='/opt/vpcsu/bin/vpcs -m '.$id.' -N '.$n -> getName();
