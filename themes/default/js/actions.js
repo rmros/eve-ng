@@ -371,7 +371,7 @@ $(document).on('contextmenu', '.context-menu', function (e) {
  
     if ($(this).hasClass('node_frame')) {
         logger(1, 'DEBUG: opening node context menu');
-
+    var node_name = $(this).attr('data-name');
     var node_id = $(this).attr('data-path');
     if(parseInt($('#node'+node_id).attr('data-status')) != 2){
         content = '<li><a class="action-nodestart  menu-manage" data-path="' + node_id + '" data-name="' + title + '" href="javascript:void(0)">' +
@@ -379,8 +379,8 @@ $(document).on('contextmenu', '.context-menu', function (e) {
                 '</a>' +
                 '</li>';
     }
-
-        var title = $(this).attr('data-name') + " (" + node_id + ")"
+        
+	var title = $(this).attr('data-name') + " (" + node_id + ")"
             , body = 
                 content+
                 '<li>' +
@@ -470,8 +470,8 @@ $(document).on('contextmenu', '.context-menu', function (e) {
            return a.length - b.length;
         })
 	$.each(eth_sortable, function (id, object) {
-                interfaces += '<li><a class="action-nodecapture context-collapsible menu-interface" href="capture://' + window.location.hostname + '/vunl' + TENANT + '_' + node_id + '_' + object.id + '" style="display: none;"><i class="glyphicon glyphicon-search"></i> ' + object['name'] + '</a></li>';
-            });
+  interfaces += '<li><a class="action-nodecapture context-collapsible menu-interface" node-name="' + node_name + '" int-name="vunl' + TENANT + '_' + node_id + '_' + object.id  + '" href="javascript:void(0)" style="display: none;"><i class="glyphicon glyphicon-search"></i> ' + object['name'] + '</a></li>';
+		});
 
             $(interfaces).appendTo('#capture-menu ul');
 
@@ -579,9 +579,13 @@ $(document).on('contextmenu', '.context-menu', function (e) {
 
 });
 
-// remove context menu after click on capture interface
-$(document).on('click', '.action-nodecapture', function(){
-    $("#context-menu").remove();
+// Add capture Interface
+$(document).on('click', '.action-nodecapture', function(e){
+    $('#context-menu').remove();
+      logger(1, 'DEBUG: action = action-nodecapture');
+      var nodeName = $(this).attr('node-name');
+      var intName = $(this).attr('int-name');
+      addCapture(nodeName, intName);
 })
 
 // Window resize
@@ -1746,6 +1750,9 @@ $(document).on('click', '.action-nodeexport, .action-nodesexport, .action-nodeex
         addModalError(message);
     });
 });
+
+
+
 
 // Start a node
 $(document).on('click', '.action-nodestart, .action-nodesstart, .action-nodestart-group', function (e) {

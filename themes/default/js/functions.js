@@ -1761,6 +1761,50 @@ function setNodeData(id){
     return false;
 }
 
+
+
+
+//set note interface
+function addCapture(nodeName,intName){
+
+    var deferred = $.Deferred();
+    var lab_filename = $('#lab-viewport').attr('data-path');
+    var form_data = {};
+    form_data[nodeName] = intName;
+
+    var url = '/api/labs' + lab_filename + '/capture/' + nodeName + '/' + intName;
+    //var type = 'PUT';
+    var type = 'GET';
+	$.ajax({
+        cache: false,
+        timeout: TIMEOUT,
+        type: type,
+        url: encodeURI(url),
+        dataType: 'json',
+        data: JSON.stringify(form_data),
+        success: function (data) {
+            if (data['status'] == 'success') {
+                logger(1, 'DEBUG: Capture Interface added.');
+                deferred.resolve(data);
+            } else {
+                // Application error
+                logger(1, 'DEBUG: application error (' + data['status'] + ') on ' + type + ' ' + url + ' (' + data['message'] + ').');
+                deferred.reject(data['message']);
+            }
+        },
+        error: function (data) {
+            // Server error
+            var message = getJsonMessage(data['responseText']);
+            logger(1, 'DEBUG: server error (' + data['status'] + ') on ' + type + ' ' + url + '.');
+            logger(1, 'DEBUG: ' + message);
+            deferred.reject(message);
+        }
+    });
+    return deferred.promise();
+
+}
+
+
 //set note interface
 function setNodeInterface(node_id,network_id,interface_id){
 

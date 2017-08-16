@@ -410,6 +410,36 @@ function apiGetLabNodes($lab,$html5,$username) {
  * @param   int     $id                 Node ID
  * @return  Array                       Node interfaces (JSend data)
  */
+function apiCaptureInterface($lab, $id) {
+$pid = '18295';
+
+//grab interface passed
+$uri = $_SERVER['REQUEST_URI'];
+$uriSplit = explode('/', $_SERVER['REQUEST_URI']);
+$device = $uriSplit[7];
+
+$uriSplitInt = explode('?',$uriSplit[8]);
+$interface = $uriSplitInt[0];
+$cmd = "ip link set netns ".$pid." ".$interface." name ".$interface."  up 2>&1";
+//exec($cmd, $o, $rc);
+
+//echo ($rc);
+ //$node = $lab -> getNodes()[$id];
+		$output['code'] = 200;
+                $output['status'] = 'success';
+                $output['message'] = $GLOBALS['messages'][60025];
+	  //      $output['data']['id'] = (int)$id;
+                //$output['data']['sort'] = $lab -> getNodes()[$id] -> getNType();
+	$output['data'] = $cmd;
+	//$output['data'] = $uriSplit;
+// $output['data'] = $uriSplitInt;
+  exec($cmd, $o, $rc);
+$output['rc'] = $o;
+        //if ($rc == 0) {
+		return $output;
+	//}
+
+}
 function apiGetLabNodeInterfaces($lab, $id) {
 	// Getting node
 	if (isset($lab -> getNodes()[$id])) {

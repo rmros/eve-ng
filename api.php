@@ -463,7 +463,7 @@ $app -> get('/api/labs/(:path+)', function($path = array()) use ($app, $db) {
 
 	$s = '/'.implode('/', $path);
 
-	$patterns[0] = '/(.+).unl.*$/';			// Drop after lab file (ending with .unl)
+	$patterns[0] = '/(.+)\.unl.*$/';			// Drop after lab file (ending with .unl)
 	$replacements[0] = '$1.unl';
 	$patterns[1] = '/.+\/([0-9]+)\/*.*$/';	// Drop after lab file (ending with .unl)
 	$replacements[1] = '$1';
@@ -563,6 +563,8 @@ $app -> get('/api/labs/(:path+)', function($path = array()) use ($app, $db) {
 		$output = apiGetLabNode($lab, $id, $user['html5'],$user['username'] );
 	} else if (preg_match('/^\/[A-Za-z0-9_+\/\\s-]+\.unl\/nodes\/[0-9]+\/interfaces$/', $s)) {
 		$output = apiGetLabNodeInterfaces($lab, $id);
+	} else if (preg_match('/^\/[A-Za-z0-9_+\/\\s-]+\.unl\/capture\/(.*)+\/(.*)$/', $s)) {
+                $output = apiCaptureInterface($lab, $id);
 	} else if (preg_match('/^\/[A-Za-z0-9_+\/\\s-]+\.unl\/nodes\/[0-9]+\/start$/', $s)) {
 		if ($tenant < 0) {
 			// User does not have an assigned tenant
