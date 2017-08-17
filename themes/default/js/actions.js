@@ -582,7 +582,7 @@ $(document).on('contextmenu', '.context-menu', function (e) {
 // Add capture Interface
 $(document).on('click', '.action-nodecapture', function(e){
     $('#context-menu').remove();
-      logger(1, 'DEBUG: action = action-nodecapture');
+      //logger(1, 'DEBUG: action = action-nodecapture');
       var nodeName = $(this).attr('node-name');
       var intName = $(this).attr('int-name');
       addCapture(nodeName, intName);

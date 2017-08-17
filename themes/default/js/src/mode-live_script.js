@@ -1,4 +1,4 @@
-define("ace/mode/live_script_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
+ace.define("ace/mode/live_script_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");
@@ -194,9 +194,9 @@ var LiveScriptHighlightRules = function() {
            TODO: 'FIXME: regexp doesn\'t have js equivalent',
            originalRegex: '(?x)((?<=Array\\.)(\n\t\t\t\tisArray\n\t\t\t))\\b' },
          { token: 'support.function.static.object.livescript',
-           regex: '(?<=Object\\.)(?:create|define(?:Propert|-propert)(?:ies|y)|freeze|get(?:Own|-own)(?:Property|-property)(?:Descriptors?|Names)|get(?:Property|-property)(?:Descriptor|Names)|getPrototypeOf|is(?:(?:Extensible|-extensible)|(?:Frozen|-frozen)|(?:Sealed|-sealed))?|keys|prevent(?:Extensions|-extensions)|seal)\\b',
+           regex: '(?<=Object\\.)(?:create|ace.define(?:Propert|-propert)(?:ies|y)|freeze|get(?:Own|-own)(?:Property|-property)(?:Descriptors?|Names)|get(?:Property|-property)(?:Descriptor|Names)|getPrototypeOf|is(?:(?:Extensible|-extensible)|(?:Frozen|-frozen)|(?:Sealed|-sealed))?|keys|prevent(?:Extensions|-extensions)|seal)\\b',
            TODO: 'FIXME: regexp doesn\'t have js equivalent',
-           originalRegex: '(?x)((?<=Object\\.)(\n\t\t\t\tcreate|define(Propert|-propert)(ies|y)|freeze|\n\t\t\t\tget(Own|-own)(Property|-property)(Descriptors?|Names)|\n\t\t\t\tget(Property|-property)(Descriptor|Names)|getPrototypeOf|\n\t\t\t\tis((Extensible|-extensible)|(Frozen|-frozen)|(Sealed|-sealed))?|\n\t\t\t\tkeys|prevent(Extensions|-extensions)|seal\n\t\t\t))\\b' },
+           originalRegex: '(?x)((?<=Object\\.)(\n\t\t\t\tcreate|ace.define(Propert|-propert)(ies|y)|freeze|\n\t\t\t\tget(Own|-own)(Property|-property)(Descriptors?|Names)|\n\t\t\t\tget(Property|-property)(Descriptor|Names)|getPrototypeOf|\n\t\t\t\tis((Extensible|-extensible)|(Frozen|-frozen)|(Sealed|-sealed))?|\n\t\t\t\tkeys|prevent(Extensions|-extensions)|seal\n\t\t\t))\\b' },
          { token: 'support.function.static.math.livescript',
            regex: '(?<=Math\\.)(?:abs|acos|acosh|asin|asinh|atan|atan2|atanh|ceil|cos|cosh|exp|expm1|floor|hypot|log|log10|log1p|log2|max|min|pow|random|round|sign|sin|sinh|sqrt|tan|tanh|trunc)\\b',
            TODO: 'FIXME: regexp doesn\'t have js equivalent',
@@ -318,7 +318,7 @@ oop.inherits(LiveScriptHighlightRules, TextHighlightRules);
 exports.LiveScriptHighlightRules = LiveScriptHighlightRules;
 });
 
-define("ace/mode/folding/cstyle",["require","exports","module","ace/lib/oop","ace/range","ace/mode/folding/fold_mode"], function(require, exports, module) {
+ace.define("ace/mode/folding/cstyle",["require","exports","module","ace/lib/oop","ace/range","ace/mode/folding/fold_mode"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../../lib/oop");
@@ -459,7 +459,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 
 });
 
-define("ace/mode/live_script",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/live_script_highlight_rules","ace/mode/folding/cstyle"], function(require, exports, module) {
+ace.define("ace/mode/live_script",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/live_script_highlight_rules","ace/mode/folding/cstyle"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");

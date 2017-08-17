@@ -1,4 +1,4 @@
-define("ace/mode/doc_comment_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
+ace.define("ace/mode/doc_comment_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");
@@ -48,7 +48,7 @@ exports.DocCommentHighlightRules = DocCommentHighlightRules;
 
 });
 
-define("ace/mode/c_cpp_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/doc_comment_highlight_rules","ace/mode/text_highlight_rules"], function(require, exports, module) {
+ace.define("ace/mode/c_cpp_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/doc_comment_highlight_rules","ace/mode/text_highlight_rules"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");
@@ -173,11 +173,10 @@ var c_cppHighlightRules = function() {
         "comment" : [
             {
                 token : "comment", // closing comment
-                regex : ".*?\\*\\/",
+                regex : "\\*\\/",
                 next : "start"
             }, {
-                token : "comment", // comment spanning whole line
-                regex : ".+"
+                defaultToken : "comment"
             }
         ],
         "singleLineComment" : [
@@ -235,7 +234,7 @@ oop.inherits(c_cppHighlightRules, TextHighlightRules);
 exports.c_cppHighlightRules = c_cppHighlightRules;
 });
 
-define("ace/mode/objectivec_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/doc_comment_highlight_rules","ace/mode/c_cpp_highlight_rules"], function(require, exports, module) {
+ace.define("ace/mode/objectivec_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/doc_comment_highlight_rules","ace/mode/c_cpp_highlight_rules"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");
@@ -528,8 +527,7 @@ var ObjectiveCHighlightRules = function() {
             regex : ".*?\\*\\/",
             next : "start"
         }, {
-            token : "comment", // comment spanning whole line
-            regex : ".+"
+            defaultToken : "comment"
         }
     ],
     "methods" : [
@@ -562,7 +560,7 @@ oop.inherits(ObjectiveCHighlightRules, CHighlightRules);
 exports.ObjectiveCHighlightRules = ObjectiveCHighlightRules;
 });
 
-define("ace/mode/folding/cstyle",["require","exports","module","ace/lib/oop","ace/range","ace/mode/folding/fold_mode"], function(require, exports, module) {
+ace.define("ace/mode/folding/cstyle",["require","exports","module","ace/lib/oop","ace/range","ace/mode/folding/fold_mode"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../../lib/oop");
@@ -702,7 +700,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 
 });
 
-define("ace/mode/objectivec",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/objectivec_highlight_rules","ace/mode/folding/cstyle"], function(require, exports, module) {
+ace.define("ace/mode/objectivec",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/objectivec_highlight_rules","ace/mode/folding/cstyle"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");

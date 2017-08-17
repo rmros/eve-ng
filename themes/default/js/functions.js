@@ -1769,11 +1769,10 @@ function addCapture(nodeName,intName){
 
     var deferred = $.Deferred();
     var lab_filename = $('#lab-viewport').attr('data-path');
-    var form_data = {};
-    form_data[nodeName] = intName;
+ //   var form_data = {};
+    //form_data[nodeName] = intName;
 
     var url = '/api/labs' + lab_filename + '/capture/' + nodeName + '/' + intName;
-    //var type = 'PUT';
     var type = 'GET';
 	$.ajax({
         cache: false,
@@ -1781,7 +1780,7 @@ function addCapture(nodeName,intName){
         type: type,
         url: encodeURI(url),
         dataType: 'json',
-        data: JSON.stringify(form_data),
+   //     data: JSON.stringify(form_data),
         success: function (data) {
             if (data['status'] == 'success') {
                 logger(1, 'DEBUG: Capture Interface added.');
@@ -1798,8 +1797,7 @@ function addCapture(nodeName,intName){
             // Server error
             var message = getJsonMessage(data['responseText']);
             logger(1, 'DEBUG: server error (' + data['status'] + ') on ' + type + ' ' + url + '.');
-            logger(1, 'DEBUG: ' + message);
-    		 addMessage('Danger', 'Attach '+ data['message'] +'');
+    		 addMessage('Danger',  message );
             deferred.reject(message);
         }
     });
@@ -1813,8 +1811,8 @@ function setNodeInterface(node_id,network_id,interface_id){
 
     var deferred = $.Deferred();
     var lab_filename = $('#lab-viewport').attr('data-path');
-   // var form_data = {};
-   // form_data[interface_id] = network_id;
+    var form_data = {};
+    form_data[interface_id] = network_id;
 
     var url = '/api/labs' + lab_filename + '/nodes/' + node_id +'/interfaces';
     var type = 'PUT';

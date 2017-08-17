@@ -35,5 +35,5 @@ $p['name'] = 'Docker';
 $p['icon'] = 'Server.png';
 $p['ethernet'] = 1;
 $p['console'] = 'vnc';
-$p['ram'] = 256;
+$p['ram'] = 512;
 ?>

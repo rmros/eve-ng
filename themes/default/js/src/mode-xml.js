@@ -1,4 +1,4 @@
-define("ace/mode/xml_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
+ace.define("ace/mode/xml_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");
@@ -11,14 +11,10 @@ var XmlHighlightRules = function(normalize) {
         start : [
             {token : "string.cdata.xml", regex : "<\\!\\[CDATA\\[", next : "cdata"},
             {
-                token : ["punctuation.xml-decl.xml", "keyword.xml-decl.xml"],
-                regex : "(<\\?)(xml)(?=[\\s])", next : "xml_decl", caseInsensitive: true
-            },
-            {
                 token : ["punctuation.instruction.xml", "keyword.instruction.xml"],
                 regex : "(<\\?)(" + tagRegex + ")", next : "processing_instruction"
             },
-            {token : "comment.xml", regex : "<\\!--", next : "comment"},
+            {token : "comment.start.xml", regex : "<\\!--", next : "comment"},
             {
                 token : ["xml-pe.doctype.xml", "xml-pe.doctype.xml"],
                 regex : "(<\\!)(DOCTYPE)(?=[\\s])", next : "doctype", caseInsensitive: true
@@ -30,9 +26,9 @@ var XmlHighlightRules = function(normalize) {
             {defaultToken : "text.xml"}
         ],
 
-        xml_decl : [{
+        processing_instruction : [{
             token : "entity.other.attribute-name.decl-attribute-name.xml",
-            regex : "(?:" + tagRegex + ":)?" + tagRegex + ""
+            regex : tagRegex
         }, {
             token : "keyword.operator.decl-attribute-equals.xml",
             regex : "="
@@ -45,11 +41,6 @@ var XmlHighlightRules = function(normalize) {
             regex : "\\?>",
             next : "start"
         }],
-
-        processing_instruction : [
-            {token : "punctuation.instruction.xml", regex : "\\?>", next : "start"},
-            {defaultToken : "instruction.xml"}
-        ],
 
         doctype : [
             {include : "whitespace"},
@@ -88,7 +79,7 @@ var XmlHighlightRules = function(normalize) {
         ],
 
         comment : [
-            {token : "comment.xml", regex : "-->", next : "start"},
+            {token : "comment.end.xml", regex : "-->", next : "start"},
             {defaultToken : "comment.xml"}
         ],
 
@@ -135,7 +126,7 @@ var XmlHighlightRules = function(normalize) {
 
         attributes: [{
             token : "entity.other.attribute-name.xml",
-            regex : "(?:" + tagRegex + ":)?" + tagRegex + ""
+            regex : tagRegex
         }, {
             token : "keyword.operator.attribute-equals.xml",
             regex : "="
@@ -210,7 +201,7 @@ oop.inherits(XmlHighlightRules, TextHighlightRules);
 exports.XmlHighlightRules = XmlHighlightRules;
 });
 
-define("ace/mode/behaviour/xml",["require","exports","module","ace/lib/oop","ace/mode/behaviour","ace/token_iterator","ace/lib/lang"], function(require, exports, module) {
+ace.define("ace/mode/behaviour/xml",["require","exports","module","ace/lib/oop","ace/mode/behaviour","ace/token_iterator","ace/lib/lang"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../../lib/oop");
@@ -377,7 +368,7 @@ oop.inherits(XmlBehaviour, Behaviour);
 exports.XmlBehaviour = XmlBehaviour;
 });
 
-define("ace/mode/folding/xml",["require","exports","module","ace/lib/oop","ace/lib/lang","ace/range","ace/mode/folding/fold_mode","ace/token_iterator"], function(require, exports, module) {
+ace.define("ace/mode/folding/xml",["require","exports","module","ace/lib/oop","ace/lib/lang","ace/range","ace/mode/folding/fold_mode","ace/token_iterator"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../../lib/oop");
@@ -414,7 +405,7 @@ function is(token, type) {
         var tag = this._getFirstTagInLine(session, row);
 
         if (!tag)
-            return "";
+            return this.getCommentFoldWidget(session, row);
 
         if (tag.closing || (!tag.tagName && tag.selfClosing))
             return foldStyle == "markbeginend" ? "end" : "";
@@ -427,6 +418,12 @@ function is(token, type) {
 
         return "start";
     };
+    
+    this.getCommentFoldWidget = function(session, row) {
+        if (/comment/.test(session.getState(row)) && /<!-/.test(session.getLine(row)))
+            return "start";
+        return "";
+    }
     this._getFirstTagInLine = function(session, row) {
         var tokens = session.getTokens(row);
         var tag = new Tag();
@@ -545,8 +542,10 @@ function is(token, type) {
     this.getFoldWidgetRange = function(session, foldStyle, row) {
         var firstTag = this._getFirstTagInLine(session, row);
         
-        if (!firstTag)
-            return null;
+        if (!firstTag) {
+            return this.getCommentFoldWidget(session, row)
+                && session.getCommentFoldRange(row, session.getLine(row).length);
+        }
         
         var isBackward = firstTag.closing || firstTag.selfClosing;
         var stack = [];
@@ -618,7 +617,7 @@ function is(token, type) {
 
 });
 
-define("ace/mode/xml",["require","exports","module","ace/lib/oop","ace/lib/lang","ace/mode/text","ace/mode/xml_highlight_rules","ace/mode/behaviour/xml","ace/mode/folding/xml","ace/worker/worker_client"], function(require, exports, module) {
+ace.define("ace/mode/xml",["require","exports","module","ace/lib/oop","ace/lib/lang","ace/mode/text","ace/mode/xml_highlight_rules","ace/mode/behaviour/xml","ace/mode/folding/xml","ace/worker/worker_client"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");

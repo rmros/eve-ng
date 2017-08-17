@@ -284,6 +284,7 @@ class Node {
                                 unset($p['console']);
                                 error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][40027]);
                         }
+			
 		}
 
                 if ($p['type'] == 'vpcs') {
@@ -454,6 +455,8 @@ class Node {
 			if (isset($p['ram'])) $this -> ram = (int) $p['ram'];
 			if (isset($p['ethernet'])) $this -> ethernet = (int) $p['ethernet'];
 			if (isset($p['console'])) $this -> console = $p['console'];	
+			if (isset($p['consoleport'])) $this -> consoleport = $p['consoleport'];
+			if (isset($p['customoptions'])) $this -> customoptions = $p['customoptions'];
 		}
 
 		// Building vpcs node
@@ -800,7 +803,7 @@ class Node {
 				// RAM is empty, unset the current one
 				unset($p['ram']);
 				$modified = True;
-			} else if (isset($p['ram']) && (int) $p['ram'] <= 0) {
+			} else if (isset($p['ram']) && (int) $p['ram'] <= 4) {
 				// RAM is invalid, ignored
 				error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][40009]);
 			} else if (isset($p['ram'])) {
@@ -1098,7 +1101,7 @@ class Node {
 		if ($this -> type == 'docker') {
 			// Docker.io node
 			$bin .= '/usr/bin/docker -H=tcp://127.0.0.1:4243';
-			$flags .= 'run -dti --net=none -p 5900:5900 --rm=false -n INSTANCENAME -h HOSTNAME';
+			$flags .= 'run -dti --net=none --rm=false -n INSTANCENAME -h HOSTNAME';
 			$flags .= ' -m '.$this -> getRam();		// Maximum RAM
 			$flags .= ' '.$this -> getImage();		// Docker image
 		}
@@ -1466,7 +1469,24 @@ class Node {
 	public function getPort() {
 		return $this -> port;
 	}
-
+	
+	 /**
+         * Method to get node custom console port.
+         * 
+         * @return      int                         Node console port
+         */
+	public function getConsolePort() {
+                return $this -> consoleport;
+        }
+	
+	/**
+         * Method to get node console port.
+         * 
+         * @return      int                         Node console port
+         */
+        public function getCustomOptions() {
+                return $this -> customoptions;
+        }
 	/**
 	 * Method to get node RAM.
 	 * 
@@ -1480,7 +1500,6 @@ class Node {
 			return 1024;
 		}
 	}
-
 	/**
 	 * Method to get running path.
 	 * 

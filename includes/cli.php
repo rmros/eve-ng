@@ -762,8 +762,10 @@ function prepareNode($n, $id, $t, $nets) {
 					return 80082;
 				}
 				
-				
-				if ($n -> getConsole() == 'vnc') {
+				if($n -> getConsolePort() != '' ) {
+                                        $connPort = $n -> getConsolePort();
+                                }
+				elseif ($n -> getConsole() == 'vnc') {
 					$connPort = 5900;
 				}
 

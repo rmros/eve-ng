@@ -411,21 +411,19 @@ function apiGetLabNodes($lab,$html5,$username) {
  * @return  Array                       Status (JSend data)
  */
 function apiCaptureInterface($lab, $id) {
+$captureNodeName = "04ab05f4-c439-4c6b-bb08-e50ac170bd25-0-1";
 
-
-$cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format "{{ .State.Pid }}" 04ab05f4-c439-4c6b-bb08-e50ac170bd25-0-1 2>&1';
+$cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format "{{ .State.Pid }}" '.$captureNodeName.' 2>&1';
 exec($cmd, $pida, $rc);
+
 $pid = $pida[0];
-//$pid = '11283';
 
-//grab interface passed...this is ugly
-$uri = $_SERVER['REQUEST_URI'];
 $uriSplit = explode('/', $_SERVER['REQUEST_URI']);
-$device = $uriSplit[7];
-
-$uriSplitInt = explode('?',$uriSplit[8]);
-$interface = $uriSplitInt[0];
+$interface = current(explode('?',end($uriSplit)));
+//$output['aaa'] = $interface;
 $cmd = "ip link set netns ".$pid." ".$interface." name ".$interface."  up 2>&1";
+$output['aaa'] = $cmd;
+
 exec($cmd, $o, $rc);
         if ($rc == 0) {
         	$output['code'] = 200;
@@ -727,6 +725,18 @@ function apiGetLabNodeTemplate($p) {
                         'value' => $p['console'],
                         'list' => Array('telnet' => 'telnet', 'vnc' => 'vnc' , 'rdp' => 'rdp' )
                 );
+		$output['data']['options']['consoleport'] = Array(
+                'name' => $GLOBALS['messages'][70037],
+                'type' => 'input',
+                'value' => ''
+        );
+
+		$output['data']['options']['customoptions'] = Array(
+                'name' => $GLOBALS['messages'][70038],
+                'type' => 'input',
+                'value' => ''
+        );
+
         } 
 
 	// Dynamips options

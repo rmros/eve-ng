@@ -1,4 +1,4 @@
-define("ace/mode/scss_highlight_rules",["require","exports","module","ace/lib/oop","ace/lib/lang","ace/mode/text_highlight_rules"], function(require, exports, module) {
+ace.define("ace/mode/scss_highlight_rules",["require","exports","module","ace/lib/oop","ace/lib/lang","ace/mode/text_highlight_rules"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");
@@ -75,7 +75,7 @@ var ScssHighlightRules = function() {
          "alpha|join|blue|ceil|change_color|comparable|complement|darken|desaturate|" + 
          "floor|grayscale|green|hue|if|invert|join|length|lighten|lightness|mix|" + 
          "nth|opacify|opacity|percentage|quote|red|round|saturate|saturation|" +
-         "scale_color|transparentize|type_of|unit|unitless|unqoute").split("|")
+         "scale_color|transparentize|type_of|unit|unitless|unquote").split("|")
     );
 
     var constants = lang.arrayToMap(
@@ -103,8 +103,30 @@ var ScssHighlightRules = function() {
     );
 
     var colors = lang.arrayToMap(
-        ("aqua|black|blue|fuchsia|gray|green|lime|maroon|navy|olive|orange|" +
-        "purple|red|silver|teal|white|yellow").split("|")
+        ("aliceblue|antiquewhite|aqua|aquamarine|azure|beige|bisque|black|" +
+        "blanchedalmond|blue|blueviolet|brown|burlywood|cadetblue|" +
+        "chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|" +
+        "darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkgrey|" +
+        "darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|" +
+        "darksalmon|darkseagreen|darkslateblue|darkslategray|darkslategrey|" +
+        "darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dimgrey|" +
+        "dodgerblue|firebrick|floralwhite|forestgreen|fuchsia|gainsboro|" +
+        "ghostwhite|gold|goldenrod|gray|green|greenyellow|grey|honeydew|" +
+        "hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|" +
+        "lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|" +
+        "lightgoldenrodyellow|lightgray|lightgreen|lightgrey|lightpink|" +
+        "lightsalmon|lightseagreen|lightskyblue|lightslategray|" +
+        "lightslategrey|lightsteelblue|lightyellow|lime|limegreen|linen|" +
+        "magenta|maroon|mediumaquamarine|mediumblue|mediumorchid|" +
+        "mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|" +
+        "mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|" +
+        "moccasin|navajowhite|navy|oldlace|olive|olivedrab|orange|orangered|" +
+        "orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|" +
+        "papayawhip|peachpuff|peru|pink|plum|powderblue|purple|rebeccapurple|" +
+        "red|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|" +
+        "seashell|sienna|silver|skyblue|slateblue|slategray|slategrey|snow|" +
+        "springgreen|steelblue|tan|teal|thistle|tomato|turquoise|violet|" +
+        "wheat|white|whitesmoke|yellow|yellowgreen").split("|")
     );
     
     var keywords = lang.arrayToMap(
@@ -216,11 +238,10 @@ var ScssHighlightRules = function() {
         "comment" : [
             {
                 token : "comment", // closing comment
-                regex : ".*?\\*\\/",
+                regex : "\\*\\/",
                 next : "start"
             }, {
-                token : "comment", // comment spanning whole line
-                regex : ".+"
+                defaultToken : "comment"
             }
         ],
         "qqstring" : [
@@ -252,7 +273,7 @@ exports.ScssHighlightRules = ScssHighlightRules;
 
 });
 
-define("ace/mode/matching_brace_outdent",["require","exports","module","ace/range"], function(require, exports, module) {
+ace.define("ace/mode/matching_brace_outdent",["require","exports","module","ace/range"], function(require, exports, module) {
 "use strict";
 
 var Range = require("../range").Range;
@@ -292,7 +313,7 @@ var MatchingBraceOutdent = function() {};
 exports.MatchingBraceOutdent = MatchingBraceOutdent;
 });
 
-define("ace/mode/behaviour/css",["require","exports","module","ace/lib/oop","ace/mode/behaviour","ace/mode/behaviour/cstyle","ace/token_iterator"], function(require, exports, module) {
+ace.define("ace/mode/behaviour/css",["require","exports","module","ace/lib/oop","ace/mode/behaviour","ace/mode/behaviour/cstyle","ace/token_iterator"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../../lib/oop");
@@ -371,7 +392,7 @@ oop.inherits(CssBehaviour, CstyleBehaviour);
 exports.CssBehaviour = CssBehaviour;
 });
 
-define("ace/mode/folding/cstyle",["require","exports","module","ace/lib/oop","ace/range","ace/mode/folding/fold_mode"], function(require, exports, module) {
+ace.define("ace/mode/folding/cstyle",["require","exports","module","ace/lib/oop","ace/range","ace/mode/folding/fold_mode"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../../lib/oop");
@@ -511,7 +532,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 
 });
 
-define("ace/mode/scss",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/scss_highlight_rules","ace/mode/matching_brace_outdent","ace/mode/behaviour/css","ace/mode/folding/cstyle"], function(require, exports, module) {
+ace.define("ace/mode/scss",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/scss_highlight_rules","ace/mode/matching_brace_outdent","ace/mode/behaviour/css","ace/mode/folding/cstyle"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");
