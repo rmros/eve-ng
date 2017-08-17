@@ -404,16 +404,21 @@ function apiGetLabNodes($lab,$html5,$username) {
 }
 
 /**
- * Function to get all node interfaces.
+ * Function to attach interface to node for capture
  *
  * @param   Lab     $lab                Lab
  * @param   int     $id                 Node ID
- * @return  Array                       Node interfaces (JSend data)
+ * @return  Array                       Status (JSend data)
  */
 function apiCaptureInterface($lab, $id) {
-$pid = '18295';
 
-//grab interface passed
+
+$cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format "{{ .State.Pid }}" 04ab05f4-c439-4c6b-bb08-e50ac170bd25-0-1 2>&1';
+exec($cmd, $pida, $rc);
+$pid = $pida[0];
+//$pid = '11283';
+
+//grab interface passed...this is ugly
 $uri = $_SERVER['REQUEST_URI'];
 $uriSplit = explode('/', $_SERVER['REQUEST_URI']);
 $device = $uriSplit[7];
@@ -421,23 +426,18 @@ $device = $uriSplit[7];
 $uriSplitInt = explode('?',$uriSplit[8]);
 $interface = $uriSplitInt[0];
 $cmd = "ip link set netns ".$pid." ".$interface." name ".$interface."  up 2>&1";
-//exec($cmd, $o, $rc);
-
-//echo ($rc);
- //$node = $lab -> getNodes()[$id];
-		$output['code'] = 200;
+exec($cmd, $o, $rc);
+        if ($rc == 0) {
+        	$output['code'] = 200;
                 $output['status'] = 'success';
-                $output['message'] = $GLOBALS['messages'][60025];
-	  //      $output['data']['id'] = (int)$id;
-                //$output['data']['sort'] = $lab -> getNodes()[$id] -> getNType();
-	$output['data'] = $cmd;
-	//$output['data'] = $uriSplit;
-// $output['data'] = $uriSplitInt;
-  exec($cmd, $o, $rc);
-$output['rc'] = $o;
-        //if ($rc == 0) {
-		return $output;
-	//}
+                $output['message'] = 'Interface Added';
+	}
+	else {
+		$output['code'] = 400;
+                $output['status'] = 'fail';
+                $output['message'] = $o[0];
+	}
+	return $output;
 
 }
 function apiGetLabNodeInterfaces($lab, $id) {

@@ -1764,7 +1764,7 @@ function setNodeData(id){
 
 
 
-//set note interface
+// Attach network to capture node
 function addCapture(nodeName,intName){
 
     var deferred = $.Deferred();
@@ -1785,11 +1785,13 @@ function addCapture(nodeName,intName){
         success: function (data) {
             if (data['status'] == 'success') {
                 logger(1, 'DEBUG: Capture Interface added.');
-                deferred.resolve(data);
+		  addMessage('success', 'Attached '+ intName +'');
+		deferred.resolve(data);
             } else {
                 // Application error
                 logger(1, 'DEBUG: application error (' + data['status'] + ') on ' + type + ' ' + url + ' (' + data['message'] + ').');
                 deferred.reject(data['message']);
+	 addMessage('Danger', data['message']);
             }
         },
         error: function (data) {
@@ -1797,6 +1799,7 @@ function addCapture(nodeName,intName){
             var message = getJsonMessage(data['responseText']);
             logger(1, 'DEBUG: server error (' + data['status'] + ') on ' + type + ' ' + url + '.');
             logger(1, 'DEBUG: ' + message);
+    		 addMessage('Danger', 'Attach '+ data['message'] +'');
             deferred.reject(message);
         }
     });
@@ -1805,13 +1808,13 @@ function addCapture(nodeName,intName){
 }
 
 
-//set note interface
+//set node interface
 function setNodeInterface(node_id,network_id,interface_id){
 
     var deferred = $.Deferred();
     var lab_filename = $('#lab-viewport').attr('data-path');
-    var form_data = {};
-    form_data[interface_id] = network_id;
+   // var form_data = {};
+   // form_data[interface_id] = network_id;
 
     var url = '/api/labs' + lab_filename + '/nodes/' + node_id +'/interfaces';
     var type = 'PUT';
@@ -1860,7 +1863,8 @@ function start(node_id) {
             if (data['status'] == 'success') {
                 logger(1, 'DEBUG: node(s) started.');
                 //$('#node' + node_id + ' img').removeClass('grayscale')
-                deferred.resolve(data['data']);
+               
+		 deferred.resolve(data['data']);
             } else {
                 // Application error
                 logger(1, 'DEBUG: application error (' + data['status'] + ') on ' + type + ' ' + url + ' (' + data['message'] + ').');
