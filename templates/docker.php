@@ -36,4 +36,5 @@ $p['icon'] = 'Server.png';
 $p['ethernet'] = 1;
 $p['console'] = 'vnc';
 $p['ram'] = 512;
+$p['custom_console_port'] = 5900;
 ?>

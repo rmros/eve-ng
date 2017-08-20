@@ -69,6 +69,7 @@ class Node {
 	private $lab_id;
 	private $left;
 	private $name;
+	private $custom_console_port;
 	private $nvram;
 	private $port;
 	private $ram;
@@ -284,6 +285,11 @@ class Node {
                                 unset($p['console']);
                                 error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][40027]);
                         }
+			if (isset($p['custom_console_port']) && !checkCustomConsolePort($p['custom_console_port'])) {
+                                // Configured console is invalid, ignored
+                                unset($p['custom_console_port']);
+                                error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][40027]);
+                        }
 			
 		}
 
@@ -455,8 +461,7 @@ class Node {
 			if (isset($p['ram'])) $this -> ram = (int) $p['ram'];
 			if (isset($p['ethernet'])) $this -> ethernet = (int) $p['ethernet'];
 			if (isset($p['console'])) $this -> console = $p['console'];	
-			if (isset($p['consoleport'])) $this -> consoleport = $p['consoleport'];
-			if (isset($p['customoptions'])) $this -> customoptions = $p['customoptions'];
+			if (isset($p['custom_console_port'])) $this -> custom_console_port = $p['custom_console_port'];
 		}
 
 		// Building vpcs node
@@ -817,6 +822,14 @@ class Node {
                                 $this -> console = htmlentities($p['console']);
                                 $modified = True;
                         }
+			if (isset($p['custom_console_port']) && $p['custom_console_port'] === '') {
+                                // Console is empty, unset the current one
+                                unset($p['custom_console_port']);
+                                $modified = True;
+                        } else if (isset($p['custom_console_port'])) {
+                                $this -> custom_console_port = (int) $p['custom_console_port'];
+                                $modified = True;
+                        }
 
 			if (isset($p['ethernet']) && $p['ethernet'] === '') {
 				// Ethernet interfaces is empty, unset the current one
@@ -1103,8 +1116,9 @@ class Node {
 			$bin .= '/usr/bin/docker -H=tcp://127.0.0.1:4243';
 			$flags .= 'run -dti --net=none --rm=false -n INSTANCENAME -h HOSTNAME';
 			$flags .= ' -m '.$this -> getRam();		// Maximum RAM
-			$flags .= ' '.$this -> getImage();		// Docker image
-		}
+			$flags .= ' '.$this -> getImage();		// Docker image	
+			$flags .= ' '.$this -> getCustomConsolePort();              // Docker port  
+			}
 
 		return Array($bin, $flags);
 	}
@@ -1475,18 +1489,15 @@ class Node {
          * 
          * @return      int                         Node console port
          */
-	public function getConsolePort() {
-                return $this -> consoleport;
-        }
+	public function getCustomConsolePort() {
+        if (isset($this -> custom_console_port)) {
+                        return $this -> custom_console_port;
+                } else {
+                        // By default return 1024
+                        return '';
+                }     
+	}
 	
-	/**
-         * Method to get node console port.
-         * 
-         * @return      int                         Node console port
-         */
-        public function getCustomOptions() {
-                return $this -> customoptions;
-        }
 	/**
 	 * Method to get node RAM.
 	 * 

@@ -146,6 +146,19 @@ function checkNodeConsole($s) {
 	}
 }
 
+
+/**
+ * Function to check if a string is valid as node_console.
+ * @param       string  $s                                      String to check
+ * @return      bool                                            True if valid
+*/
+function checkCustomConsolePort($s) {
+ //todo
+ return True;
+
+}
+
+
 /**
  * Function to check if a string is valid as node_icon.
  *

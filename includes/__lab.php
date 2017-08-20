@@ -183,6 +183,7 @@ class Lab {
 				$n = Array();
 				if (isset($node -> attributes() -> config)) $n['config'] = (string) $node -> attributes() -> config;
 				if (isset($node -> attributes() -> console)) $n['console'] = (string) $node -> attributes() -> console;
+				if (isset($node -> attributes() -> custom_console_port)) $n['custom_console_port'] = (int) $node -> attributes() -> custom_console_port;
 				if (isset($node -> attributes() -> cpu)) $n['cpu'] = (int) $node -> attributes() -> cpu;
 				if (isset($node -> attributes() -> delay)) $n['delay'] = (string) $node -> attributes() -> delay;
 				if (isset($node -> attributes() -> ethernet)) $n['ethernet'] = (int) $node -> attributes() -> ethernet;
@@ -1198,6 +1199,7 @@ class Lab {
 							$d -> addAttribute('ethernet', $node -> getEthernetCount());
 							$d -> addAttribute('ram', $node -> getRam());
 							$d -> addAttribute('console', $node -> getConsole());
+							$d -> addAttribute('custom_console_port', $node -> getCustomConsolePort());
 							break;
 						case 'qemu':
 							// QEMU specific parameters

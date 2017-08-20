@@ -317,6 +317,7 @@ function apiGetLabNode($lab, $id , $html5, $username ) {
 		if ($node -> getNType() == 'docker') {
 			$output['data']['ethernet'] = $node -> getEthernetCount();
 			$output['data']['ram'] = $node -> getRam();
+			$output['data']['custom_console_port'] = $node -> getCustomConsolePort();
 		}
 		if ($node -> getNType() == 'vpcs') {
                         $output['data']['ethernet'] = $node -> getEthernetCount();
@@ -394,6 +395,7 @@ function apiGetLabNodes($lab,$html5,$username) {
 			if ($node -> getNType() == 'docker') {
 				$output['data'][$node_id]['ethernet'] = $node -> getEthernetCount();
 				$output['data'][$node_id]['ram'] = $node -> getRam();
+				$output['data'][$node_id]['custom_console_port'] = $node -> getCustomConsolePort();
 			}
 			if ($node -> getNType() == 'vpcs') {
                                 $output['data'][$node_id]['ethernet'] = $node -> getEthernetCount();
@@ -411,8 +413,12 @@ function apiGetLabNodes($lab,$html5,$username) {
  * @return  Array                       Status (JSend data)
  */
 function apiCaptureInterface($lab, $id) {
-$captureNodeName = "04ab05f4-c439-4c6b-bb08-e50ac170bd25-0-1";
 
+
+//$captureNodeName = "04ab05f4-c439-4c6b-bb08-e50ac170bd25-0-1";
+$config_ini = parse_ini_file('.config');
+
+$captureNodeName = $config_ini['docker_container_name'];
 $cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format "{{ .State.Pid }}" '.$captureNodeName.' 2>&1';
 exec($cmd, $pida, $rc);
 
@@ -725,17 +731,12 @@ function apiGetLabNodeTemplate($p) {
                         'value' => $p['console'],
                         'list' => Array('telnet' => 'telnet', 'vnc' => 'vnc' , 'rdp' => 'rdp' )
                 );
-		$output['data']['options']['consoleport'] = Array(
+		$output['data']['options']['custom_console_port'] = Array(
                 'name' => $GLOBALS['messages'][70037],
                 'type' => 'input',
-                'value' => ''
+                'value' => $p['custom_console_port']
         );
 
-		$output['data']['options']['customoptions'] = Array(
-                'name' => $GLOBALS['messages'][70038],
-                'type' => 'input',
-                'value' => ''
-        );
 
         } 
 
