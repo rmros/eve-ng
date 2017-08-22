@@ -20,16 +20,22 @@
  * @return  int                         0 means ok
  */
 function addBridge($s) {
-	$cmd = 'brctl addbr '.$s['name'].' 2>&1';
-	error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
+
+	$cmd = 'ovs-vsctl add-br '.$s['name'].' 2>&1';
+	error_log(date('M d H:i:s ').'INFO: Adding Bridge '.$cmd);
 	exec($cmd, $o, $rc);
+
+        // ADD BPDU CDP option
+
+/*
 	if ($rc != 0) {
 		// Failed to add the bridge
 		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80026]);
 		error_log(date('M d H:i:s ').implode("\n", $o));
 		return 80026;
 	}
-
+*/
+	/*
 	$cmd = 'ip link set dev '.$s['name'].' up 2>&1';
 	error_log(date('M d H:i:s ').'INFO: starting '.$cmd);	
 	exec($cmd, $o, $rc);
@@ -77,7 +83,7 @@ function addBridge($s) {
 			return 80055;
 		}
 	}
-
+	*/
 	return 0;
 }
 
@@ -93,10 +99,11 @@ function addNetwork($p) {
 		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80021]);
 		return 80021;
 	}
-
+	error_log(date('M d H:i:s ').'INFO: Add Network  '.$p['type']);
 	switch ($p['type']) {
 		default:
 			if (in_array($p['type'], listClouds())) {
+				error_log(date('M d H:i:s ').'INFO: Is Cloud '.$p['type']);
 				// Cloud already exists
 			} else if (preg_match('/^pnet[0-9]+$/', $p['type'])) {
 				// Cloud does not exist
@@ -165,7 +172,7 @@ function addNetwork($p) {
  * @return  int                         0 means ok
  */
 function addOvs($s) {
-	$cmd = 'ovs-vsctl add-br '.$s.' 2>&1';
+	$cmd = 'ovs-vsctl add-br '.$s['name'].' 2>&1';
 	exec($cmd, $o, $rc);
 	if ($rc != 0) {
 		// Failed to add the OVS
@@ -173,6 +180,7 @@ function addOvs($s) {
 		error_log(date('M d H:i:s ').implode("\n", $o));
 		return 80023;
 	}
+	/*
 	// ADD BPDU CDP option
 	$cmd = "ovs-vsctl set bridge ".$s." other-config:forward-bpdu=true";
 	exec($cmd, $o, $rc);
@@ -184,7 +192,7 @@ function addOvs($s) {
 		error_log(date('M d H:i:s ').implode("\n", $o));
 		return 80023;
 	}
-
+	*/
 }
 
 /**
@@ -300,9 +308,12 @@ function checkUsername($i) {
  * @return  int                         0 means ok
  */
 function connectInterface($n, $p) {
+	//For bridges and pnet interfaces
 	if (isBridge($n)) {
-		$cmd = 'brctl addif '.$n.' '.$p.' 2>&1';
-		error_log(date('M d H:i:s ').'INFO: starting cI'.$cmd);
+		
+		//$cmd = 'brctl addif '.$n.' '.$p.' 2>&1';
+		$cmd = 'ovs-vsctl add-port '.$n.' '.$p.' 2>&1';
+		error_log(date('M d H:i:s ').'INFO: Adding Port '.$cmd);
 		exec($cmd, $o, $rc);
 		if ($rc == 0) {
 			return 0;
@@ -312,9 +323,11 @@ function connectInterface($n, $p) {
 			//	error_log(date('M d H:i:s ').implode("\n", $o));
 			return 80030;
 		}
+		
 	} else if (isOvs($n)) {
 		$cmd = 'ovs-vsctl add-port '.$n.' '.$p.' 2>&1';
 		exec($cmd, $o, $rc);
+		       error_log(date('M d H:i:s ').'INFO: starting ovs '.$cmd);
 		if ($rc == 0) {
 			return 0;
 		} else {
@@ -360,6 +373,7 @@ function delBridge($s) {
  * @return  int                         0 means ok
  */
 function delOvs($s) {
+	/*
 	$cmd = 'ovs-vsctl del-br '.$s.' 2>&1';
 	exec($cmd, $o, $rc);
 	if ($rc == 0) {
@@ -370,6 +384,8 @@ function delOvs($s) {
 		error_log(date('M d H:i:s ').implode("\n", $o));
 		return 80024;
 	}
+	*/
+	return 0;
 }
 
 /**
@@ -672,9 +688,9 @@ function prepareNode($n, $id, $t, $nets) {
 	$cmd = 'id -u '.$user.' 2>&1';
 	exec($cmd, $o, $rc);
 	$uid = $o[0];
-
 	// Creating TAP interfaces
 	foreach ($n -> getEthernets() as $interface_id => $interface) {
+		 error_log(date('M d H:i:s ').'INFO: interface found '.print_r($interface));
 		$tap_name = 'vunl'.$t.'_'.$id.'_'.$interface_id;
 		if (isset($nets[$interface -> getNetworkId()]) && $nets[$interface -> getNetworkId()] -> isCloud()) {
 			// Network is a Cloud
@@ -697,7 +713,7 @@ function prepareNode($n, $id, $t, $nets) {
 			// Failed to add TAP interface
 			return $rc;
 		}
-		error_log(date('M d H:i:s ').'INFO: starting er'.$interface -> getNetworkId());
+		error_log(date('M d H:i:s ').'INFO: Adding Interface    '.$interface -> getNetworkId());
 		if ($interface -> getNetworkId() !== 0) {
 			// Connect interface to network
 			$rc = connectInterface($net_name, $tap_name);
@@ -932,6 +948,9 @@ function prepareNode($n, $id, $t, $nets) {
  * @return  int                         0 means ok
  */
 function start($n, $id, $t, $nets, $scripttimeout) {
+//	exec('cat '.print_r($id).' > out2.txt');
+
+//	file_put_contents("out2.txt",print_r($n).print_r($id));
 	if ($n -> getStatus() !== 0) {
 		// Node is in running or building state
 		return 0;
@@ -939,6 +958,7 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 
 	$rc = prepareNode($n, $id, $t, $nets);
 	if ($rc !== 0) {
+		error_log(date('M d H:i:s ').'INFO: Failed to Prepare Node ');
 		// Failed to prepare the node
 		return $rc;
 	}

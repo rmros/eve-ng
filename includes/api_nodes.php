@@ -427,8 +427,37 @@ $pid = $pida[0];
 $uriSplit = explode('/', $_SERVER['REQUEST_URI']);
 $interface = current(explode('?',end($uriSplit)));
 //$output['aaa'] = $interface;
-$cmd = "ip link set netns ".$pid." ".$interface." name ".$interface."  up 2>&1";
-$output['aaa'] = $cmd;
+
+$sif=$interface;
+$dif='d'.$interface;
+
+# ingress
+
+exec('tunctl -u unl0 -g root -t '.$dif.'');
+exec('ip link set dev '.$dif.' up');
+exec('tc qdisc add dev '.$sif.' ingress');
+
+$dir1 = 'tc filter add dev '.$sif.' parent ffff: '.
+          ' protocol all '.
+          ' u32 match u8 0 0 '.
+          ' action mirred egress mirror dev '.$dif.'';
+$output['aaa'] = $dir1;
+exec ($dir1);
+
+# egress
+exec ('tc qdisc add dev '.$sif.' handle 1: root prio');
+exec ('tc filter add dev '.$sif.' parent 1: '.
+          ' protocol all'.
+          ' u32 match u8 0 0'.
+          ' action mirred egress mirror dev '.$dif.'');
+
+
+
+//$cmd = "ip link set netns ".$pid." ".$dif." name ".$dif."  up 2>&1";
+//$output['aaa'] = $cmd;
+
+
+
 
 exec($cmd, $o, $rc);
         if ($rc == 0) {
