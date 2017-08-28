@@ -99,13 +99,10 @@ function addNetwork($p) {
 		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80021]);
 		return 80021;
 	}
-	error_log(date('M d H:i:s ').'INFO: Add Network  '.$p['type']);
 	switch ($p['type']) {
 		default:
-			if (in_array($p['type'], listClouds())) {
-				error_log(date('M d H:i:s ').'INFO: Is Cloud '.$p['type']);
 				// Cloud already exists
-			} else if (preg_match('/^pnet[0-9]+$/', $p['type'])) {
+		        if (preg_match('/^pnet[0-9]+$/', $p['type'])) {
 				// Cloud does not exist
 				error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80056]);
 				return 80056;
@@ -118,43 +115,10 @@ function addNetwork($p) {
 		case 'bridge':
 			if (!isInterface($p['name'])) {
 				// Interface does not exist -> create bridge
-				return addBridge($p);
-			} else if (isBridge($p['name'])) {
-				// Bridge already present
-				return 0;
-			} else if (isOvs($p['name'])) {
-				// OVS exists -> delete it and add bridge
-				$rc = delOvs($p['name']);
-				if ($rc == 0) {
-					// OVS deleted, create the bridge
-					return addBridge($p);
-				} else {
-					// Failed to delete OVS
-					return $rc;
-				}
-			} else {
-				// Non bridge/OVS interface exist -> cannot create
-				error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80022]);
-				return 80022;
-			}
-			break;
-		case 'ovs':
-			if (!isInterface($p['name'])) {
-				// Interface does not exist -> create OVS
 				return addOvs($p['name']);
 			} else if (isOvs($p['name'])) {
-				// OVS already present
+				// Bridge already present
 				return 0;
-			} else if (isBridge($p['name'])) {
-				// Bridge exists -> delete it and add OVS
-				$rc = delBridge($p['name']);
-				if ($rc == 0) {
-					// Bridge deleted, create the OVS
-					return addOvs($p['name']);
-				} else {
-					// Failed to delete Bridge
-					return $rc;
-				}
 			} else {
 				// Non bridge/OVS interface exist -> cannot create
 				error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80022]);
@@ -172,7 +136,8 @@ function addNetwork($p) {
  * @return  int                         0 means ok
  */
 function addOvs($s) {
-	$cmd = 'ovs-vsctl add-br '.$s['name'].' 2>&1';
+	if (!isOvs($s)) {
+	$cmd = 'ovs-vsctl add-br '.$s.' 2>&1';
 	exec($cmd, $o, $rc);
 	if ($rc != 0) {
 		// Failed to add the OVS
@@ -190,6 +155,7 @@ function addOvs($s) {
 		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80023]);
 		error_log(date('M d H:i:s ').implode("\n", $o));
 		return 80023;
+	}
 	}
 }
 
