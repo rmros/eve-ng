@@ -85,7 +85,7 @@ function apiAddLabNode($lab, $p, $o) {
  */
 function apiDeleteLabNode($lab, $id, $tenant) {
 	// Delete all tmp files for the node
-	$cmd = 'sudo /opt/unetlab/wrappers/unl_wrapper -a delete -T 0 -D '.$id.' -F "'.$lab -> getPath().'/'.$lab -> getFilename().'"';  // Tenant not required for delete operation
+	$cmd = 'sudo /opt/unetlab/wrappers/unl_wrapper -a wipe -T 0 -D '.$id.' -F "'.$lab -> getPath().'/'.$lab -> getFilename().'"';  // Tenant not required for delete operation
 	exec($cmd, $o, $rc);
 	// Stop the node
 	foreach( scandir("/opt/unetlab/tmp/") as $value ) {	
@@ -414,11 +414,11 @@ function apiGetLabNodes($lab,$html5,$username) {
  */
 function apiCaptureInterface($lab, $id) {
 
-
-//$captureNodeName = "04ab05f4-c439-4c6b-bb08-e50ac170bd25-0-1";
+// Docker capture node container name
 $config_ini = parse_ini_file('.config');
-
 $captureNodeName = $config_ini['docker_container_name'];
+
+
 $cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format "{{ .State.Pid }}" '.$captureNodeName.' 2>&1';
 exec($cmd, $pida, $rc);
 
@@ -426,40 +426,42 @@ $pid = $pida[0];
 
 $uriSplit = explode('/', $_SERVER['REQUEST_URI']);
 $interface = current(explode('?',end($uriSplit)));
-//$output['aaa'] = $interface;
 
 $sif=$interface;
-$dif='d'.$interface;
-
-# ingress
-
-exec('tunctl -u unl0 -g root -t '.$dif.'');
-exec('ip link set dev '.$dif.' up');
-exec('tc qdisc add dev '.$sif.' ingress');
-
-$dir1 = 'tc filter add dev '.$sif.' parent ffff: '.
-          ' protocol all '.
-          ' u32 match u8 0 0 '.
-          ' action mirred egress mirror dev '.$dif.'';
-$output['aaa'] = $dir1;
-exec ($dir1);
-
-# egress
-exec ('tc qdisc add dev '.$sif.' handle 1: root prio');
-exec ('tc filter add dev '.$sif.' parent 1: '.
-          ' protocol all'.
-          ' u32 match u8 0 0'.
-          ' action mirred egress mirror dev '.$dif.'');
+$dif='cap'.$interface;
 
 
 
-//$cmd = "ip link set netns ".$pid." ".$dif." name ".$dif."  up 2>&1";
-//$output['aaa'] = $cmd;
+// find the bridge which the port uses
+$cmd = 'ovs-vsctl  port-to-br '.$sif.' 2>&1';
+exec($cmd, $bridgea, $rc);
+error_log('INFO: Bridge found '.$cmd.'');
+
+$bridge = $bridgea[0];
 
 
+$cmd = 'ovs-vsctl add-port '.$bridge.' '.$dif.' -- set interface '.$dif.' type=internal';
+
+exec($cmd, $output, $rc);
+error_log('INFO: Adding port to capture node '.$cmd.'');
 
 
-exec($cmd, $o, $rc);
+// create mirror on ovs
+$cmd = "sudo ovs-vsctl ".
+ "-- --id=@m create mirror name=mirror".$bridge." ".
+ " -- add bridge ".$bridge." mirrors @m ".
+ " -- --id=@".$sif." get port ".$sif." ".
+ " -- set mirror mirror".$bridge." select_src_port=@".$sif." select_dst_port=@".$sif." ".
+ " -- --id=@".$dif." get port ".$dif." ".
+ " -- set mirror mirror".$bridge." output-port=@".$dif." ";
+
+exec($cmd, $output, $rc);
+
+// Attach capture interface to docker wireshark node
+$cmd = "ip link set netns ".$pid." ".$dif." name ".$dif."  up 2>&1";
+
+// $cmd = 'ovs-docker add-port '.$bridge.' '.$sif.' '.$captureNodeName.'';
+ exec($cmd, $output, $rc);
         if ($rc == 0) {
         	$output['code'] = 200;
                 $output['status'] = 'success';
@@ -468,7 +470,7 @@ exec($cmd, $o, $rc);
 	else {
 		$output['code'] = 400;
                 $output['status'] = 'fail';
-                $output['message'] = $o[0];
+                $output['message'] = 'Failed to Add Interface';
 	}
 	return $output;
 

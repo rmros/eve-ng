@@ -562,6 +562,8 @@ class Lab {
 
 			// Delete the node
 			unset($this -> nodes[$i]);
+			error_log(date('M d H:i:s ').'INFO: '.$this -> path .'/'.$this -> filename.'?node='.$i.' '.$GLOBALS['messages'][20024]);
+
 		} else {
 			error_log(date('M d H:i:s ').'WARNING: '.$this -> path .'/'.$this -> filename.'?node='.$i.' '.$GLOBALS['messages'][20024]);
 		}

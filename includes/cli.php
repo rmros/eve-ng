@@ -180,7 +180,6 @@ function addOvs($s) {
 		error_log(date('M d H:i:s ').implode("\n", $o));
 		return 80023;
 	}
-	/*
 	// ADD BPDU CDP option
 	$cmd = "ovs-vsctl set bridge ".$s." other-config:forward-bpdu=true";
 	exec($cmd, $o, $rc);
@@ -192,7 +191,6 @@ function addOvs($s) {
 		error_log(date('M d H:i:s ').implode("\n", $o));
 		return 80023;
 	}
-	*/
 }
 
 /**
@@ -777,22 +775,22 @@ function prepareNode($n, $id, $t, $nets) {
 					error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80082]);
 					return 80082;
 				}
-				$connPort = $n -> getCustomConsolePort();
-				/*
-				if($n -> getConsolePort() != '' ) {
-                                        $connPort = $n -> getConsolePort();
+				error_log(date('M d H:i:s ').'INFO: Console Type for node is:   '.$n -> getConsole());
+                                if($n -> getCustomConsolePort() != '' ) {
+                                        $connPort = $n -> getCustomConsolePort();
                                 }
-				elseif ($n -> getConsole() == 'vnc') {
-					$connPort = 5900;
-				}
-
-				elseif ($n -> getConsole() == 'rdp' ) {
-					$connPort = 3389;
-				}
-				else {
-					$connPort = 23;
-				}
-*/
+                                elseif ($n -> getConsole() == 'vnc') {
+                                        $connPort = 5900;
+                                }
+                                elseif ($n -> getConsole() == 'rdp' ) {
+                                        $connPort = 3389;
+                                }
+                                elseif ($n -> getConsole() == 'ssh' ) {
+                                        $connPort = 22;
+                                }
+                                else {
+                                        $connPort = 23;
+                                }
 				$cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format="{{ .State.Running }}" '.$n -> getUuid();
 
 				exec($cmd, $o, $rc);
@@ -800,7 +798,6 @@ function prepareNode($n, $id, $t, $nets) {
 					// Must create docker.io container
 					$cmd = 'docker -H=tcp://127.0.0.1:4243 create -ti --memory '.$n -> getRam().'M --privileged --net=bridge -p '.$n -> getPort().':'.$connPort.' --name='.$n -> getUuid().' -h '.$n -> getName().' '.$n -> getImage();
 					error_log(date('M d H:i:s ').'INFO: starting '.$cmd);		
-					error_log(date('M d H:i:s ').'INFO: starting '.$connPort);
 					exec($cmd, $o, $rc);
 					if ($rc != 0) {
 						// Failed to create container
@@ -949,7 +946,7 @@ function prepareNode($n, $id, $t, $nets) {
  */
 function start($n, $id, $t, $nets, $scripttimeout) {
 //	exec('cat '.print_r($id).' > out2.txt');
-
+ $user = 'unl'.$t;
 //	file_put_contents("out2.txt",print_r($n).print_r($id));
 	if ($n -> getStatus() !== 0) {
 		// Node is in running or building state
@@ -1079,16 +1076,15 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 		// Need to configure each interface
 		foreach ($n -> getEthernets() as $interface_id => $interface) {
 
-			// create interface which will be attached to docker instance
-			// ip link add docker0_1_0 type veth peer name vnet0_1_0 
-			$cmd = 'ip link add docker'.$t.'_'.$id.'_'.$interface_id.' type veth peer name vnet'.$t.'_'.$id.'_'.$interface_id;
-			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
-			exec($cmd, $o, $rc);
-
 			
-			// We know our own interface
-			$tap_name = 'vnet'.$t.'_'.$id.'_'.$interface_id;
+			// We specify the names of our interfaces
+			$tap_name = 'vunl'.$t.'_'.$id.'_'.$interface_id;
+			$dint_name = 'docker'.$t.'_'.$id.'_'.$interface_id;
+		//	$rc = addTap($tap_name, $user);
 			
+		//	$cmd = 'ip link add '.$dint_name.' type veth peer name '.$tap_name.'';
+		//	error_log(date('M d H:i:s ').'INFO: Creating veth interface '.$cmd);
+                  //      exec($cmd, $o, $rc);
 
 			// For the peer which we bridge to we need to find the peer interface name
 			if (isset($nets[$interface -> getNetworkId()]) && $nets[$interface -> getNetworkId()] -> isCloud()) {
@@ -1097,32 +1093,36 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 			} else {
 				$net_name = 'vnet'.$t.'_'.$interface -> getNetworkId();
 			}
-
+			
 			// Here we brdige the interfaces
 			if ($interface -> getNetworkId() !== 0) {
 				// Connect interface to network
-				$cmd = 'brctl addif '.$net_name.' '.$tap_name;
-				error_log(date('M d H:i:s ').'INFO: starting cI'.$cmd);
+				//$cmd = 'sudo ovs-vsctl add-port '.$net_name.' '.$tap_name;
+				 $cmd = 'ovs-docker add-port '.$net_name.' '.$tap_name.' '.$n -> getUuid().'';
+				error_log(date('M d H:i:s ').'INFO: Connecting interface'.$cmd);
 				exec($cmd, $o, $rc);
 			}
-
+			
 
 			// set interface status to up
-			$cmd = 'ip link set dev vnet'.$t.'_'.$id.'_'.$interface_id.' up';
-			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
-			exec($cmd, $o, $rc);
+		//	$cmd = 'ip link set dev '.$tap_name.' up';
+			//$cmd = 'ip link set dev '.$dint_name.' up';
+		//	error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
+		//	exec($cmd, $o, $rc);
 
 			// We need to attach our interface to our docker instance
 			// For that, we grab the pid
-			$cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format "{{ .State.Pid }}" '.$n -> getUuid();
-			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
-			exec($cmd, $o, $rc);
+			//$cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format "{{ .State.Pid }}" '.$n -> getUuid();
+			//error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
+			//exec($cmd, $o, $rc);
 			
 			// Here we use the pid from above and attach it to the docker container
 			// ip link set netns ${PID} docker3_4_5 name eth0 address 22:ce:e0:99:04:05 up
-			$cmd = 'ip link set netns '.$o[1].' docker'.$t.'_'.$id.'_'.$interface_id.' name eth'.($interface_id+1).' address '.'50:'.sprintf('%02x', $t).':'.sprintf('%02x', $id / 512).':'.sprintf('%02x', $id % 512).':00:'.sprintf('%02x', $interface_id).' up';
-			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
-			exec($cmd, $o, $rc);
+			//$cmd = 'ip link set netns '.$o[1].' '.$tap_name.' name eth'.($interface_id+1).' address '.'50:'.sprintf('%02x', $t).':'.sprintf('%02x', $id / 512).':'.sprintf('%02x', $id % 512).':00:'.sprintf('%02x', $interface_id).' up';
+		//	$cmd = 'ip link set dev '.$dint_name.' netns '.$o[1].'';
+	//		$cmd = 'ovs-docker add-port '.$net_name.' '.$tap_name.' '.$n -> getUuid().'';
+	//		error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
+	//		exec($cmd, $o, $rc);
 
 
 			// can be used if you wish to add routes
