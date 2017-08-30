@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'vMX-VFP';
+$p['cpulimit'] = 1;
 $p['icon'] = 'JunipervQFXpfe.png';
 $p['cpu'] = 3;
 $p['ram'] = 4096;

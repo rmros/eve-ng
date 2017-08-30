@@ -30,10 +30,11 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'FirePower';
+$p['cpulimit'] = 1;
 $p['icon'] = 'Server.png';
 $p['cpu'] = 4;
 $p['ram'] = 8192;
-$p['ethernet'] = 4;
+$p['ethernet'] = 5;
 $p['console'] = 'vnc';
 $p['qemu_arch'] = 'x86_64';
 $p['qemu_options'] = '-machine type=pc-1.0,accel=kvm -serial none -nographic -nodefconfig -nodefaults -display none -vga std -rtc base=utc';

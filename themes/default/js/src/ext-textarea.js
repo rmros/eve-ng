@@ -1,4 +1,4 @@
-ace.define("ace/theme/textmate",["require","exports","module","ace/lib/dom"], function(require, exports, module) {
+define("ace/theme/textmate",["require","exports","module","ace/lib/dom"], function(require, exports, module) {
 "use strict";
 
 exports.isDark = false;
@@ -128,7 +128,7 @@ var dom = require("../lib/dom");
 dom.importCssString(exports.cssText, exports.cssClass);
 });
 
-ace.define("ace/ext/textarea",["require","exports","module","ace/lib/event","ace/lib/useragent","ace/lib/net","ace/ace","ace/theme/textmate"], function(require, exports, module) {
+define("ace/ext/textarea",["require","exports","module","ace/lib/event","ace/lib/useragent","ace/lib/net","ace/ace","ace/theme/textmate"], function(require, exports, module) {
 "use strict";
 
 var event = require("../lib/event");
@@ -441,7 +441,6 @@ function setupSettingPanel(settingDiv, settingOpener, editor) {
             cobalt:           "Cobalt",
             crimson_editor:   "Crimson Editor",
             dawn:             "Dawn",
-            gob:              "Green on Black",
             eclipse:          "Eclipse",
             idle_fingers:     "Idle Fingers",
             kr_theme:         "Kr Theme",
@@ -555,6 +554,6 @@ exports.defaultOptions = {
 
 });
                 (function() {
-                    ace.require(["ace/ext/textarea"], function() {});
+                    window.require(["ace/ext/textarea"], function() {});
                 })();
             

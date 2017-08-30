@@ -139,6 +139,7 @@ $messages[40024] = 'Cannot configure slot, invalid slot type (40024).';
 $messages[40025] = 'Node has no valid image (40025).';
 $messages[40026] = 'Attribute ignored, invalid node_uuid (40026).';
 $messages[40027] = 'Attribute ignored, invalid node_console (40027).';
+$messages[40028] = 'Attribute ignored, invalid cpumimit (40028).';
 
 // __picture.php (50000-50999)
 $messages[50000] = 'Cannot create picture, invalid or missing mandatory parameters (50000).';
@@ -257,8 +258,10 @@ $messages[70033] = 'Timos License Path';
 $messages[70034] = 'QEMU Arch';
 $messages[70035] = 'QEMU Nic';
 $messages[70036] = 'QEMU Version';
-$messages[70037] = 'Console Port';
-$messages[70038] = 'Custom Options';
+$messages[70037] = 'CPU Limit';
+$messages[70038] = 'Console Port';
+$messages[70039] = 'Custom Options';
+
 
 // CLI (80000-89999)
 $messages[80009] = 'Failed to add the username (80009).';

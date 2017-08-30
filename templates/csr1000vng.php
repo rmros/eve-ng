@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'CSR'; 
+$p['cpulimit'] = 1;
 $p['icon'] = 'CSRv1000.png';
 $p['cpu'] = 1;
 $p['ram'] = 3072; 

@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'IPS'; 
+$p['cpulimit'] = 1;
 $p['icon'] = 'IPS.png';
 $p['cpu'] = 1;
 $p['ram'] = 2048; 

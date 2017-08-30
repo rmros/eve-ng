@@ -88,6 +88,7 @@ function apiDeleteLabNode($lab, $id, $tenant) {
 	$cmd = 'sudo /opt/unetlab/wrappers/unl_wrapper -a wipe -T 0 -D '.$id.' -F "'.$lab -> getPath().'/'.$lab -> getFilename().'"';  // Tenant not required for delete operation
 	exec($cmd, $o, $rc);
 	// Stop the node
+	/*
 	foreach( scandir("/opt/unetlab/tmp/") as $value ) {	
 		if ( is_dir("/opt/unetlab/tmp/".$value) and intval($value) >= 0 ) {
 			$output=apiStopLabNode($lab, $id, intval($value)); 
@@ -95,6 +96,7 @@ function apiDeleteLabNode($lab, $id, $tenant) {
 			if ($output['status'] == 400 ) return $output; 	
 		}
 	}
+	*/
 	// Deleting the node
 	$rc = $lab -> deleteNode($id);
 	if ($rc === 0) {
@@ -287,6 +289,7 @@ function apiGetLabNode($lab, $id , $html5, $username ) {
 		}
 
 		if ($node -> getNType() == 'qemu') {
+			$output['data']['cpulimit'] = $node -> getCpuLimit();
 			$output['data']['cpu'] = $node -> getCpu();
 			$output['data']['ethernet'] = $node -> getEthernetCount();
 			$output['data']['ram'] = $node -> getRam();
@@ -413,68 +416,70 @@ function apiGetLabNodes($lab,$html5,$username) {
  * @return  Array                       Status (JSend data)
  */
 function apiCaptureInterface($lab, $id) {
+        // Docker capture node container name
+        $config_ini = parse_ini_file('.config');
+        $captureNodeName = $config_ini['docker_container_name'];
 
-// Docker capture node container name
-$config_ini = parse_ini_file('.config');
-$captureNodeName = $config_ini['docker_container_name'];
+        $cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format "{{ .State.Pid }}" '.$captureNodeName.' 2>&1';
+        exec($cmd, $pida, $rc);
 
+        $pid = $pida[0];
 
-$cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format "{{ .State.Pid }}" '.$captureNodeName.' 2>&1';
-exec($cmd, $pida, $rc);
+        $uriSplit = explode('/', $_SERVER['REQUEST_URI']);
+        $interface = current(explode('?',end($uriSplit)));
 
-$pid = $pida[0];
+        $sif=$interface;
+        $dif='cap'.$interface;
 
-$uriSplit = explode('/', $_SERVER['REQUEST_URI']);
-$interface = current(explode('?',end($uriSplit)));
+        // find the bridge which the port uses
+        $cmd = 'ovs-vsctl  port-to-br '.$sif.' 2>&1';
+        exec($cmd, $bridgea, $rc);
+        error_log('INFO: Bridge found '.$cmd.'');
 
-$sif=$interface;
-$dif='cap'.$interface;
-
-
-
-// find the bridge which the port uses
-$cmd = 'ovs-vsctl  port-to-br '.$sif.' 2>&1';
-exec($cmd, $bridgea, $rc);
-error_log('INFO: Bridge found '.$cmd.'');
-
-$bridge = $bridgea[0];
+        $bridge = $bridgea[0];
 
 
-$cmd = 'ovs-vsctl add-port '.$bridge.' '.$dif.' -- set interface '.$dif.' type=internal';
+        $cmd = 'ovs-vsctl add-port '.$bridge.' '.$dif.' -- set interface '.$dif.' type=internal';
+        exec($cmd, $output, $rc);
+        error_log('INFO: Adding port to capture node '.$cmd.'');
 
-exec($cmd, $output, $rc);
-error_log('INFO: Adding port to capture node '.$cmd.'');
+        // create mirror on ovs
+        $cmd = "ovs-vsctl ".
+                "-- --id=@m create mirror name=mirror".$bridge." ".
+                " -- add bridge ".$bridge." mirrors @m ".
+                " -- --id=@".$sif." get port ".$sif." ".
+                " -- set mirror mirror".$bridge." select_src_port=@".$sif." select_dst_port=@".$sif." ".
+                " -- --id=@".$dif." get port ".$dif." ".
+                " -- set mirror mirror".$bridge." output-port=@".$dif." ";
 
+        exec($cmd, $output, $rc);
 
-// create mirror on ovs
-$cmd = "sudo ovs-vsctl ".
- "-- --id=@m create mirror name=mirror".$bridge." ".
- " -- add bridge ".$bridge." mirrors @m ".
- " -- --id=@".$sif." get port ".$sif." ".
- " -- set mirror mirror".$bridge." select_src_port=@".$sif." select_dst_port=@".$sif." ".
- " -- --id=@".$dif." get port ".$dif." ".
- " -- set mirror mirror".$bridge." output-port=@".$dif." ";
+        // Attach capture interface to docker wireshark node
+        $cmd = "ip link set netns ".$pid." ".$dif." name ".$dif."  up 2>&1";
 
-exec($cmd, $output, $rc);
-
-// Attach capture interface to docker wireshark node
-$cmd = "ip link set netns ".$pid." ".$dif." name ".$dif."  up 2>&1";
-
-// $cmd = 'ovs-docker add-port '.$bridge.' '.$sif.' '.$captureNodeName.'';
- exec($cmd, $output, $rc);
+        // $cmd = 'ovs-docker add-port '.$bridge.' '.$sif.' '.$captureNodeName.'';
+        exec($cmd, $output, $rc);
         if ($rc == 0) {
-        	$output['code'] = 200;
+                $output['code'] = 200;
                 $output['status'] = 'success';
                 $output['message'] = 'Interface Added';
-	}
-	else {
-		$output['code'] = 400;
+        }
+        else {
+                $output['code'] = 400;
                 $output['status'] = 'fail';
                 $output['message'] = 'Failed to Add Interface';
-	}
-	return $output;
+        }
+        return $output;
 
 }
+
+/**
+ * Function to get all node interfaces.
+ *
+ * @param   Lab     $lab                Lab
+ * @param   int     $id                 Node ID
+ * @return  Array                       Node interfaces (JSend data)
+ */
 function apiGetLabNodeInterfaces($lab, $id) {
 	// Getting node
 	if (isset($lab -> getNodes()[$id])) {
@@ -596,7 +601,12 @@ function apiGetLabNodeTemplate($p) {
 		'type' => 'input',
 		'value' => ''
 	);
-
+        // CPULimit
+        if ($p['type'] == 'qemu') $output['data']['options']['cpulimit'] = Array(
+                'name' => $GLOBALS['messages'][70037],
+                'type' => 'checkbox',
+                'value' => $p['cpulimit']
+        );
 	// CPU
 	if ($p['type'] == 'qemu') $output['data']['options']['cpu'] = Array(
 		'name' => $GLOBALS['messages'][70003],
@@ -701,7 +711,7 @@ function apiGetLabNodeTemplate($p) {
                                 'name' => $GLOBALS['messages'][70036],
                                 'type' => 'list',
                                 'value' =>( isset($p['qemu_version'])?$p['qemu_version']:""),
-                                'list'  => Array ( '1.3.1' => '1.3.1' ,'2.0.2' => '2.0.2','2.2.0' => '2.2.0','2.4.0' => '2.4.0','2.5.0' => '2.5.0','2.6.2' => '2.6.2', '' => 'tpl'.( isset($p['qemu_version'])?'('.$p['qemu_version'].')':"(default 2.4.0)")));
+                                'list'  => Array ( '1.3.1' => '1.3.1' ,'2.0.2' => '2.0.2','2.2.0' => '2.2.0','2.4.0' => '2.4.0','2.5.0' => '2.5.0','2.6.2' => '2.6.2','2.9.0' => '2.9.0', '' => 'tpl'.( isset($p['qemu_version'])?'('.$p['qemu_version'].')':"(default 2.4.0)")));
                         $output['data']['options']['qemu_arch'] =  Array(
                                 'name' => $GLOBALS['messages'][70034],
                                 'type' => 'list',
@@ -745,7 +755,6 @@ function apiGetLabNodeTemplate($p) {
 	);
 
 	// Console
-//	if (in_array($p['type'], Array('qemu', 'docker'))) $output['data']['options']['console'] = Array(
 	if ($p['type'] == 'qemu') {
 		$output['data']['options']['console'] = Array(
 			'name' => $GLOBALS['messages'][70015],
@@ -753,24 +762,20 @@ function apiGetLabNodeTemplate($p) {
 			'value' => $p['console'],
 			'list' => Array('telnet' => 'telnet', 'vnc' => 'vnc' , 'rdp' => 'rdp' )
 		);
-	} 
-
-	if ($p['type'] == 'docker') {
+	}
+   	if ($p['type'] == 'docker') {
                 $output['data']['options']['console'] = Array(
-                        'name' => $GLOBALS['messages'][70015],
-                        'type' => 'list',
-                        'value' => $p['console'],
-                        'list' => Array('telnet' => 'telnet', 'vnc' => 'vnc' , 'rdp' => 'rdp' )
+                                'name' => $GLOBALS['messages'][70015],
+                                'type' => 'list',
+                                'value' => $p['console'],
+                                'list' => Array('telnet' => 'telnet', 'vnc' => 'vnc' , 'rdp' => 'rdp' )
                 );
-		$output['data']['options']['custom_console_port'] = Array(
-                'name' => $GLOBALS['messages'][70037],
-                'type' => 'input',
-                'value' => $p['custom_console_port']
-        );
-
-
-        } 
-
+                $output['data']['options']['custom_console_port'] = Array(
+                                'name' => $GLOBALS['messages'][70038],
+                                'type' => 'input',
+                                'value' => $p['custom_console_port']
+                );
+	}
 	// Dynamips options
 	if ($p['type'] == 'dynamips') {
 		$output['data']['dynamips'] = Array();

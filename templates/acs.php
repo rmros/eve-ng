@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'ACS';
+$p['cpulimit'] = 1;
 $p['icon'] = 'Cisco ACS.png';
 $p['cpu'] = 2;
 $p['ram'] = 4096; 

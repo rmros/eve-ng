@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu'; 
 $p['name'] = 'nsvpx';
+$p['cpulimit'] = 1;
 $p['icon'] = 'Load Balancer.png';
 $p['cpu'] = 2; 
 $p['ram'] = 2048;

@@ -30,6 +30,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'Mikrotik';
+$p['cpulimit'] = 1;
 $p['icon'] = 'Router.png';
 $p['cpu'] = 1;
 $p['ram'] = 256;

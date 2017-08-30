@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu'; 
 $p['name'] = 'pfSense'; 
+$p['cpulimit'] = 1;
 $p['icon'] = 'Firewall.png'; 
 $p['cpu'] = 1; 
 $p['ram'] = 2048; 

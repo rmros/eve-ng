@@ -1,9 +1,9 @@
-ace.define("ace/theme/cobalt",["require","exports","module","ace/lib/dom"], function(require, exports, module) {
+define("ace/theme/cobalt",["require","exports","module","ace/lib/dom"], function(require, exports, module) {
 
 exports.isDark = true;
 exports.cssClass = "ace-cobalt";
 exports.cssText = ".ace-cobalt .ace_gutter {\
-background: #011e3a;\
+background: #263339;\
 color: rgb(128,145,160)\
 }\
 .ace-cobalt .ace_print-margin {\
@@ -11,7 +11,7 @@ width: 1px;\
 background: #555555\
 }\
 .ace-cobalt {\
-background-color: #002240;\
+background-color: #263339;\
 color: #FFFFFF\
 }\
 .ace-cobalt .ace_cursor {\
@@ -21,7 +21,7 @@ color: #FFFFFF\
 background: rgba(179, 101, 57, 0.75)\
 }\
 .ace-cobalt.ace_multiselect .ace_selection.ace_start {\
-box-shadow: 0 0 3px 0px #002240;\
+box-shadow: 0 0 3px 0px #263339;\
 }\
 .ace-cobalt .ace_marker-layer .ace_step {\
 background: rgb(127, 111, 19)\

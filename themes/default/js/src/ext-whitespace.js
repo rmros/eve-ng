@@ -1,4 +1,4 @@
-ace.define("ace/ext/whitespace",["require","exports","module","ace/lib/lang"], function(require, exports, module) {
+define("ace/ext/whitespace",["require","exports","module","ace/lib/lang"], function(require, exports, module) {
 "use strict";
 
 var lang = require("../lib/lang");
@@ -82,37 +82,16 @@ exports.detectIndentation = function(session) {
         session.setTabSize(indent.length);
     return indent;
 };
-exports.trimTrailingSpace = function(session, options) {
+
+exports.trimTrailingSpace = function(session, trimEmpty) {
     var doc = session.getDocument();
     var lines = doc.getAllLines();
     
-    var min = options && options.trimEmpty ? -1 : 0;
-    var cursors = [], ci = -1;
-    if (options && options.keepCursorPosition) {
-        if (session.selection.rangeCount) {
-            session.selection.rangeList.ranges.forEach(function(x, i, ranges) {
-               var next = ranges[i + 1];
-               if (next && next.cursor.row == x.cursor.row)
-                  return;
-              cursors.push(x.cursor);
-            });
-        } else {
-            cursors.push(session.selection.getCursor());
-        }
-        ci = 0;
-    }
-    var cursorRow = cursors[ci] && cursors[ci].row;
+    var min = trimEmpty ? -1 : 0;
 
     for (var i = 0, l=lines.length; i < l; i++) {
         var line = lines[i];
         var index = line.search(/\s+$/);
-
-        if (i == cursorRow) {
-            if (index < cursors[ci].column && index > min)
-               index = cursors[ci].column;
-            ci++;
-            cursorRow = cursors[ci] ? cursors[ci].row : -1;
-        }
 
         if (index > min)
             doc.removeInLine(i, index, line.length);
@@ -201,6 +180,6 @@ exports.commands = [{
 
 });
                 (function() {
-                    ace.require(["ace/ext/whitespace"], function() {});
+                    window.require(["ace/ext/whitespace"], function() {});
                 })();
             

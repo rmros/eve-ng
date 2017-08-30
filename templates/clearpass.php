@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'ClearPass'; 
+$p['cpulimit'] = 1;
 $p['icon'] = 'Network Analyzer.png';
 $p['cpu'] = 2;
 $p['ram'] = 4096; 

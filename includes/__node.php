@@ -47,6 +47,7 @@ class Node {
 	private $config_data;
 	private $console;
 	private $cpu;
+	private $cpulimit = 1 ;
 	private $delay;
 	private $ethernet;
 	private $ethernets = Array();
@@ -69,7 +70,6 @@ class Node {
 	private $lab_id;
 	private $left;
 	private $name;
-	private $custom_console_port;
 	private $nvram;
 	private $port;
 	private $ram;
@@ -81,7 +81,7 @@ class Node {
 	private $top; 
 	private $type; 
 	private $uuid; 
-
+	private $custom_console_port;
 	/**
 	 * Constructor which creates a node.
 	 * Parameters:
@@ -269,30 +269,29 @@ class Node {
 		}
 
 		if ($p['type'] == 'docker') {
-			if (isset($p['ethernet']) && (int) $p['ethernet'] <= 0) {
-				// Ethernet interfaces is invalid, default to 1
-				$p['ethernet'] = 1;
-				error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][40012]);
-			}
+                        if (isset($p['ethernet']) && (int) $p['ethernet'] <= 0) {
+                                // Ethernet interfaces is invalid, default to 1
+                                $p['ethernet'] = 1;
+                                error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][40012]);
+                        }
 
-			if (isset($p['ram']) && (int) $p['ram'] <= 0) {
-				// RAM is invalid, ignored
-				unset($p['ram']);
-				error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][40009]);
-			}
-			if (isset($p['console']) && !checkNodeConsole($p['console'])) {
+                        if (isset($p['ram']) && (int) $p['ram'] <= 0) {
+                                // RAM is invalid, ignored
+                                unset($p['ram']);
+                                error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][40009]);
+                        }
+                        if (isset($p['console']) && !checkNodeConsole($p['console'])) {
                                 // Configured console is invalid, ignored
                                 unset($p['console']);
                                 error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][40027]);
                         }
-			if (isset($p['custom_console_port']) && !checkCustomConsolePort($p['custom_console_port'])) {
+                        if (isset($p['custom_console_port']) && !checkCustomConsolePort($p['custom_console_port'])) {
                                 // Configured console is invalid, ignored
                                 unset($p['custom_console_port']);
                                 error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][40027]);
                         }
-			
-		}
 
+                }
                 if ($p['type'] == 'vpcs') {
                         if (isset($p['ethernet']) && (int) $p['ethernet'] <= 0) {
                                 // Ethernet interfaces is invalid, default to 1
@@ -355,6 +354,7 @@ class Node {
 		if ($p['type'] == 'qemu') {
 			//if (isset($p['console'])) $this -> console = $p['console'];
 			if (isset($p['cpu'])) $this -> cpu = (int) $p['cpu'];
+			if (isset($p['cpulimit'])) $this -> cpulimit = (int) $p['cpulimit'];
 			if (isset($p['ethernet'])) $this -> ethernet = (int) $p['ethernet'];
 			if (isset($p['uuid'])) $this -> uuid = $p['uuid'];
 			if (isset($p['ram'])) $this -> ram = (int) $p['ram'];
@@ -455,15 +455,14 @@ class Node {
 				$this -> qemu_nic = '';
 			}
 		}
-
+		
 		// Building docker node
 		if ($p['type'] == 'docker') {
-			if (isset($p['ram'])) $this -> ram = (int) $p['ram'];
-			if (isset($p['ethernet'])) $this -> ethernet = (int) $p['ethernet'];
-			if (isset($p['console'])) $this -> console = $p['console'];	
-			if (isset($p['custom_console_port'])) $this -> custom_console_port = $p['custom_console_port'];
-		}
-
+                        if (isset($p['ram'])) $this -> ram = (int) $p['ram'];
+                        if (isset($p['ethernet'])) $this -> ethernet = (int) $p['ethernet'];
+                        if (isset($p['console'])) $this -> console = $p['console'];
+                        if (isset($p['custom_console_port'])) $this -> custom_console_port = $p['custom_console_port'];
+                }
 		// Building vpcs node
                 if ($p['type'] == 'vpcs') {
                         if (isset($p['ethernet'])) $this -> ethernet = 1;
@@ -716,6 +715,12 @@ class Node {
 			} else if (isset($p['cpu'])) {
 				$this -> cpu = (int) $p['cpu'];
 			}
+                        if (isset($p['cpulimit']) && ( (int) $p['cpulimit'] < 0 || (int) $p['cpulimit'] > 1 ) ) {
+                                // Configured CPUlimit is invalid, ignored
+                                error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][40028]);
+                        } else if (isset($p['cpulimit'])) {
+                                $this -> cpulimit = (int) $p['cpulimit'];
+                        }
 
 			if (isset($p['ram']) && $p['ram'] === '') {
 				// RAM is empty, unset the current one
@@ -804,17 +809,17 @@ class Node {
 
 
 		if ($this -> type == 'docker') {
-			if (isset($p['ram']) && $p['ram'] === '') {
-				// RAM is empty, unset the current one
-				unset($p['ram']);
-				$modified = True;
-			} else if (isset($p['ram']) && (int) $p['ram'] <= 4) {
-				// RAM is invalid, ignored
-				error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][40009]);
-			} else if (isset($p['ram'])) {
-				$this -> ram = (int) $p['ram'];
-			}
-			if (isset($p['console']) && $p['console'] === '') {
+                        if (isset($p['ram']) && $p['ram'] === '') {
+                                // RAM is empty, unset the current one
+                                unset($p['ram']);
+                                $modified = True;
+                        } else if (isset($p['ram']) && (int) $p['ram'] <= 4) {
+                                // RAM is invalid, ignored
+                                error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][40009]);
+                        } else if (isset($p['ram'])) {
+                                $this -> ram = (int) $p['ram'];
+                        }
+                        if (isset($p['console']) && $p['console'] === '') {
                                 // Console is empty, unset the current one
                                 unset($p['console']);
                                 $modified = True;
@@ -822,7 +827,7 @@ class Node {
                                 $this -> console = htmlentities($p['console']);
                                 $modified = True;
                         }
-			if (isset($p['custom_console_port']) && $p['custom_console_port'] === '') {
+                        if (isset($p['custom_console_port']) && $p['custom_console_port'] === '') {
                                 // Console is empty, unset the current one
                                 unset($p['custom_console_port']);
                                 $modified = True;
@@ -831,20 +836,19 @@ class Node {
                                 $modified = True;
                         }
 
-			if (isset($p['ethernet']) && $p['ethernet'] === '') {
-				// Ethernet interfaces is empty, unset the current one
-				unset($p['ethernet']);
-				$modified = True;
-			} else if (isset($p['ethernet']) && (int) $p['ethernet'] <= 0) {
-				// Ethernet interfaces is invalid, ignored
-				error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][40012]);
-			} else if (isset($p['ethernet']) && $this -> ethernet != (int) $p['ethernet']) {
-				// New Ethernet value
-				$this -> ethernet = (int) $p['ethernet'];
-				$modified = True;
-			}
-		}
-
+                        if (isset($p['ethernet']) && $p['ethernet'] === '') {
+                                // Ethernet interfaces is empty, unset the current one
+                                unset($p['ethernet']);
+                                $modified = True;
+                        } else if (isset($p['ethernet']) && (int) $p['ethernet'] <= 0) {
+                                // Ethernet interfaces is invalid, ignored
+                                error_log(date('M d H:i:s ').'WARNING: '.$GLOBALS['messages'][40012]);
+                        } else if (isset($p['ethernet']) && $this -> ethernet != (int) $p['ethernet']) {
+                                // New Ethernet value
+                                $this -> ethernet = (int) $p['ethernet'];
+                                $modified = True;
+                        }
+                }
                 if ($this -> type == 'vpcs') {
                         if (isset($p['ethernet']) && $p['ethernet'] === '') {
                                 // Ethernet interfaces is empty, unset the current one
@@ -1076,9 +1080,9 @@ class Node {
                                         $replacements[0] = '$1';
                                         $disk_id = preg_replace($patterns, $replacements, $filename);
                                         $disk_id = (int) ord(strtolower($disk_id)) - 97;
-                                        $flags .= ' -device ahci,id=ahci0,bus=pci.0';
+                                        $flags .= ' -device ahci,id=ahci'.$disk_id.',bus=pci.0';
                                         $flags .= ' -drive file='.$filename.',if=none,id=drive-sata-disk'.$disk_id.',format=qcow2';
-                                        $flags .= ' -device ide-drive,bus=ahci0.0,drive=drive-sata-disk'.$disk_id.',id=drive-sata-disk'.$disk_id.',bootindex=1';
+                                        $flags .= ' -device ide-drive,bus=ahci'.$disk_id.'.0,drive=drive-sata-disk'.$disk_id.',id=drive-sata-disk'.$disk_id.',bootindex='.($disk_id + 1);
 					if ( $this->template == 'nxosv9k') {
 						$flags .=" -bios /opt/qemu/share/qemu/OVMF-sata.fd";
 					}
@@ -1116,9 +1120,8 @@ class Node {
 			$bin .= '/usr/bin/docker -H=tcp://127.0.0.1:4243';
 			$flags .= 'run -dti --net=none --rm=false -n INSTANCENAME -h HOSTNAME';
 			$flags .= ' -m '.$this -> getRam();		// Maximum RAM
-			$flags .= ' '.$this -> getImage();		// Docker image	
-			$flags .= ' '.$this -> getCustomConsolePort();              // Docker port  
-			}
+			$flags .= ' '.$this -> getImage();		// Docker image
+		}
 
 		return Array($bin, $flags);
 	}
@@ -1184,9 +1187,9 @@ class Node {
 		}
 	}
 */
-//		if ($this -> type == 'docker') {
-  //                      return 'docker://'.$_SERVER['SERVER_NAME'].':4243/'.$this -> lab_id.'-'.$this -> tenant.'-'.$this -> id.'?'.$this -> name;
-    //            }
+		//if ($this -> type == 'docker') {
+                 //       return 'docker://'.$_SERVER['SERVER_NAME'].':4243/'.$this -> lab_id.'-'.$this -> tenant.'-'.$this -> id.'?'.$this -> name;
+                //}
 		$html5_db = html5_checkDatabase();
 		if ( $html5 != 1 ) {
 			switch ( $this -> console ) {
@@ -1235,6 +1238,20 @@ class Node {
 			return 1;
 		}
 	}
+
+        /**
+         * Method to get configured CPULimit.
+         *
+         * @return      int                         Configured CPUs
+         */
+        public function getCpuLimit() {
+                if (isset($this -> cpulimit)) {
+                        return $this -> cpulimit;
+                } else {
+                        // By default return 1
+                        return 1;
+                }
+        }
 
 	/**
 	 * Method to get node delay.
@@ -1483,21 +1500,22 @@ class Node {
 	public function getPort() {
 		return $this -> port;
 	}
+
 	
 	 /**
          * Method to get node custom console port.
-         * 
-         * @return      int                         Node console port
+         *
+         * @return      int                         Node custom console port
          */
-	public function getCustomConsolePort() {
+        public function getCustomConsolePort() {
         if (isset($this -> custom_console_port)) {
                         return $this -> custom_console_port;
                 } else {
                         // By default return 1024
                         return '';
-                }     
-	}
-	
+                }
+        }
+
 	/**
 	 * Method to get node RAM.
 	 * 
@@ -1511,6 +1529,7 @@ class Node {
 			return 1024;
 		}
 	}
+
 	/**
 	 * Method to get running path.
 	 * 
@@ -2905,7 +2924,7 @@ class Node {
 								// Previous interface found, copy from old one
 								$this -> ethernets[$i] = $old_ethernets[$i];
 							} else {
-								$n = 'v'.$i.'/0';			// Interface name
+								$n = 'v1/'.$i;			// Interface name
 								try {
 									$this -> ethernets[$i] = new Interfc(Array('name' => $n, 'type' => 'ethernet'), $i);
 								} catch (Exception $e) {

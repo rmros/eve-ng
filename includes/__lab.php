@@ -183,8 +183,9 @@ class Lab {
 				$n = Array();
 				if (isset($node -> attributes() -> config)) $n['config'] = (string) $node -> attributes() -> config;
 				if (isset($node -> attributes() -> console)) $n['console'] = (string) $node -> attributes() -> console;
-				if (isset($node -> attributes() -> custom_console_port)) $n['custom_console_port'] = (int) $node -> attributes() -> custom_console_port;
 				if (isset($node -> attributes() -> cpu)) $n['cpu'] = (int) $node -> attributes() -> cpu;
+				if (isset($node -> attributes() -> cpulimit)) $n['cpulimit'] = (int) $node -> attributes() -> cpulimit;
+				if (isset($node -> attributes() -> custom_console_port)) $n['custom_console_port'] = (int) $node -> attributes() -> custom_console_port;
 				if (isset($node -> attributes() -> delay)) $n['delay'] = (string) $node -> attributes() -> delay;
 				if (isset($node -> attributes() -> ethernet)) $n['ethernet'] = (int) $node -> attributes() -> ethernet;
 				if (isset($node -> attributes() -> icon)) $n['icon'] = (string) $node -> attributes() -> icon;
@@ -562,8 +563,6 @@ class Lab {
 
 			// Delete the node
 			unset($this -> nodes[$i]);
-			error_log(date('M d H:i:s ').'INFO: '.$this -> path .'/'.$this -> filename.'?node='.$i.' '.$GLOBALS['messages'][20024]);
-
 		} else {
 			error_log(date('M d H:i:s ').'WARNING: '.$this -> path .'/'.$this -> filename.'?node='.$i.' '.$GLOBALS['messages'][20024]);
 		}
@@ -1201,12 +1200,13 @@ class Lab {
 							$d -> addAttribute('ethernet', $node -> getEthernetCount());
 							$d -> addAttribute('ram', $node -> getRam());
 							$d -> addAttribute('console', $node -> getConsole());
-							$d -> addAttribute('custom_console_port', $node -> getCustomConsolePort());
+                                                        $d -> addAttribute('custom_console_port', $node -> getCustomConsolePort());
 							break;
 						case 'qemu':
 							// QEMU specific parameters
 							$d -> addAttribute('console', $node -> getConsole());
 							$d -> addAttribute('cpu', $node -> getCpu());
+							$d -> addAttribute('cpulimit', $node -> getCpuLimit());
 							$d -> addAttribute('ram', $node -> getRam());
 							$d -> addAttribute('ethernet', $node -> getEthernetCount());
 							$d -> addAttribute('uuid', $node -> getUuid());

@@ -32,6 +32,7 @@
 
 $p['type'] = 'dynamips'; 
 $p['name'] = '3725'; 
+$p['cpulimit'] = 1;
 $p['icon'] = 'Router.png'; 
 $p['idlepc'] = '0x60c08728'; 
 $p['nvram'] = 128; 

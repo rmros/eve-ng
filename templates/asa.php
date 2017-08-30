@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'ASA';
+$p['cpulimit'] = 1;
 $p['icon'] = 'ASA.png';
 $p['cpu'] = 1;
 $p['ram'] = 512;

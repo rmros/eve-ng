@@ -1,4 +1,4 @@
-ace.define("ace/ext/modelist",["require","exports","module"], function(require, exports, module) {
+define("ace/ext/modelist",["require","exports","module"], function(require, exports, module) {
 "use strict";
 
 var modes = [];
@@ -35,6 +35,8 @@ Mode.prototype.supportsFile = function(filename) {
     return filename.match(this.extRe);
 };
 var supportedModes = {
+    //Junos:       ["conf|conf.1|conf.2|conf.3|conf.4|conf.5|conf.6|conf.7|conf.8|conf.9|conf.10|conf.11|conf.12|conf.13|conf.14|conf.15|conf.16|conf.17|conf.18|conf.19|conf.20|conf.21|conf.22|conf.23|conf.24|conf.25|conf.26|conf.27|conf.28|conf.29|conf.30|conf.31|conf.32|conf.33|conf.34|conf.35|conf.36|conf.37|conf.38|conf.39|conf.40|conf.41|conf.42|conf.43|conf.44|conf.45|conf.46|conf.47|conf.48|conf.49"],
+    //CiscoIOS:    ["ios"],
     ABAP:        ["abap"],
     ABC:         ["abc"],
     ActionScript:["as"],
@@ -77,7 +79,6 @@ var supportedModes = {
     Glsl:        ["glsl|frag|vert"],
     Gobstones:   ["gbs"],
     golang:      ["go"],
-    GraphQLSchema: ["gql"],
     Groovy:      ["groovy"],
     HAML:        ["haml"],
     Handlebars:  ["hbs|handlebars|tpl|mustache"],
@@ -126,7 +127,6 @@ var supportedModes = {
     Perl:        ["pl|pm"],
     pgSQL:       ["pgsql"],
     PHP:         ["php|phtml|shtml|php3|php4|php5|phps|phpt|aw|ctp|module"],
-    Pig:         ["pig"],
     Powershell:  ["ps1"],
     Praat:       ["praat|praatscript|psc|proc"],
     Prolog:      ["plg|prolog"],
@@ -173,7 +173,9 @@ var supportedModes = {
     XML:         ["xml|rdf|rss|wsdl|xslt|atom|mathml|mml|xul|xbl|xaml"],
     XQuery:      ["xq"],
     YAML:        ["yaml|yml"],
-    Django:      ["html"]
+    Django:      ["html"],
+    Cisco_IOS:   ["cisco_ios"],
+    Cisco:       ["cisco"]
 };
 
 var nameOverrides = {
@@ -204,6 +206,6 @@ module.exports = {
 
 });
                 (function() {
-                    ace.require(["ace/ext/modelist"], function() {});
+                    window.require(["ace/ext/modelist"], function() {});
                 })();
             

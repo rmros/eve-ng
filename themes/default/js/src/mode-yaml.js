@@ -1,4 +1,4 @@
-ace.define("ace/mode/yaml_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
+define("ace/mode/yaml_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");
@@ -12,10 +12,10 @@ var YamlHighlightRules = function() {
                 regex : "#.*$"
             }, {
                 token : "list.markup",
-                regex : /^(?:-{3}|\.{3})\s*(?=#|$)/
+                regex : /^(?:-{3}|\.{3})\s*(?=#|$)/     
             },  {
                 token : "list.markup",
-                regex : /^\s*[\-?](?:$|\s)/
+                regex : /^\s*[\-?](?:$|\s)/     
             }, {
                 token: "constant",
                 regex: "!![\\w//]+"
@@ -39,24 +39,8 @@ var YamlHighlightRules = function() {
                 regex : '["](?:(?:\\\\.)|(?:[^"\\\\]))*?["]'
             }, {
                 token : "string", // multi line string start
-                regex : /[|>][-+\d\s]*$/,
-                onMatch: function(val, state, stack, line) {
-                    var indent = /^\s*/.exec(line)[0];
-                    if (stack.length < 1) {
-                        stack.push(this.next);
-                    } else {
-                        stack[0] = "mlString";
-                    }
-
-                    if (stack.length < 2) {
-                        stack.push(indent.length);
-                    }
-                    else {
-                        stack[1] = indent.length;
-                    }
-                    return this.token;
-                },
-                next : "mlString"
+                regex : '[|>][-+\\d\\s]*$',
+                next : "qqstring"
             }, {
                 token : "string", // single quoted string
                 regex : "['](?:(?:\\\\.)|(?:[^'\\\\]))*?[']"
@@ -77,32 +61,16 @@ var YamlHighlightRules = function() {
                 regex : "[\\])}]"
             }
         ],
-        "mlString" : [
+        "qqstring" : [
             {
-                token : "indent",
-                regex : /^\s*$/
-            }, {
-                token : "indent",
-                regex : /^\s*/,
-                onMatch: function(val, state, stack) {
-                    var curIndent = stack[1];
-
-                    if (curIndent >= val.length) {
-                        this.next = "start";
-                        stack.splice(0);
-                    }
-                    else {
-                        this.next = "mlString";
-                    }
-                    return this.token;
-                },
-                next : "mlString"
+                token : "string",
+                regex : '(?=(?:(?:\\\\.)|(?:[^:]))*?:)',
+                next : "start"
             }, {
                 token : "string",
                 regex : '.+'
             }
         ]};
-    this.normalizeRules();
 
 };
 
@@ -111,7 +79,7 @@ oop.inherits(YamlHighlightRules, TextHighlightRules);
 exports.YamlHighlightRules = YamlHighlightRules;
 });
 
-ace.define("ace/mode/matching_brace_outdent",["require","exports","module","ace/range"], function(require, exports, module) {
+define("ace/mode/matching_brace_outdent",["require","exports","module","ace/range"], function(require, exports, module) {
 "use strict";
 
 var Range = require("../range").Range;
@@ -151,7 +119,7 @@ var MatchingBraceOutdent = function() {};
 exports.MatchingBraceOutdent = MatchingBraceOutdent;
 });
 
-ace.define("ace/mode/folding/coffee",["require","exports","module","ace/lib/oop","ace/mode/folding/fold_mode","ace/range"], function(require, exports, module) {
+define("ace/mode/folding/coffee",["require","exports","module","ace/lib/oop","ace/mode/folding/fold_mode","ace/range"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../../lib/oop");
@@ -238,7 +206,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 
 });
 
-ace.define("ace/mode/yaml",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/yaml_highlight_rules","ace/mode/matching_brace_outdent","ace/mode/folding/coffee"], function(require, exports, module) {
+define("ace/mode/yaml",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/yaml_highlight_rules","ace/mode/matching_brace_outdent","ace/mode/folding/coffee"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");

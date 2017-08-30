@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'NXOS';
+$p['cpulimit'] = 0;
 $p['icon'] = 'Nexus7K.png';
 $p['cpu'] = 2;
 $p['ram'] = 8192;

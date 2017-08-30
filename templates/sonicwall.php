@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'SonicWall';
+$p['cpulimit'] = 1;
 $p['icon'] = 'Firewall.png';
 $p['cpu'] = 2;
 $p['ram'] = 2048; 

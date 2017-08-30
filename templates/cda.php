@@ -32,6 +32,7 @@
   
 $p['type'] = 'qemu'; 
 $p['name'] = 'cda'; 
+$p['cpulimit'] = 1;
 $p['icon'] = 'Server.png'; 
 $p['cpu'] = 2; 
 $p['ram'] = 2048; 

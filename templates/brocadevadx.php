@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'vADX';
+$p['cpulimit'] = 1;
 $p['icon'] = 'Switch.png';
 $p['cpu'] = 2;
 $p['ram'] = 2048; 

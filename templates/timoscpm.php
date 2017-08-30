@@ -17,6 +17,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = '7750SR_CPM';
+$p['cpulimit'] = 1;
 $p['icon'] = 'SROS.png';
 $p['cpu'] = 1;
 $p['ram'] = 2048; 

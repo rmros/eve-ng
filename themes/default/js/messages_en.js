@@ -186,3 +186,4 @@ MESSAGES[171] = 'KSM Status';
 MESSAGES[200] = 'Upload' ;
 MESSAGES[201] = 'Upload Config File' ;
 MESSAGES[202] = 'Upload Config' ;
+MESSAGES[203] = 'CPU Limit' ;

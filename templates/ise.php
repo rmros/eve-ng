@@ -32,9 +32,10 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'ISE';
+$p['cpulimit'] = 0;
 $p['icon'] = 'ISE.png';
-$p['cpu'] = 2;
-$p['ram'] = 4096; 
+$p['cpu'] = 4;
+$p['ram'] = 8192; 
 $p['ethernet'] = 1; 
 $p['console'] = 'telnet'; 
 $p['qemu_arch'] = 'x86_64';

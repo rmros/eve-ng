@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'Winserver';
+$p['cpulimit'] = 1;
 $p['icon'] = 'Server.png';
 $p['cpu'] = 1;
 $p['ram'] = 4096;

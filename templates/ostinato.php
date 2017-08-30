@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'Ostinato';
+$p['cpulimit'] = 1;
 $p['icon'] = 'Network Analyzer.png';
 $p['cpu'] = 1;
 $p['ram'] = 512; 

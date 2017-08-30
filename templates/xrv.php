@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'xrv';
+$p['cpulimit'] = 1;
 $p['icon'] = 'XR.png';
 $p['cpu'] = 1;
 $p['ram'] = 3072;

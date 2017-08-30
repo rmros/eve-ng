@@ -30,6 +30,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'Sourcefire';
+$p['cpulimit'] = 1;
 $p['icon'] = 'Server.png';
 $p['cpu'] = 4;
 $p['ram'] = 4096;

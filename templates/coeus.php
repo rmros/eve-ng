@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'WSA'; 
+$p['cpulimit'] = 1;
 $p['icon'] = 'WSA.png';
 $p['cpu'] = 1;
 $p['ram'] = 4096; 

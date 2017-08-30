@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'VyOS';
+$p['cpulimit'] = 1;
 $p['url'] = 'http://vyos.net/';
 $p['icon'] = 'Router.png';
 $p['cpu'] = 1;

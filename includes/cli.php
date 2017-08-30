@@ -14,80 +14,6 @@
  */
 
 /**
- * Function to create a bridge
- *
- * @param   string  $s                  Bridge name
- * @return  int                         0 means ok
- */
-function addBridge($s) {
-
-	$cmd = 'ovs-vsctl add-br '.$s['name'].' 2>&1';
-	error_log(date('M d H:i:s ').'INFO: Adding Bridge '.$cmd);
-	exec($cmd, $o, $rc);
-
-        // ADD BPDU CDP option
-
-/*
-	if ($rc != 0) {
-		// Failed to add the bridge
-		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80026]);
-		error_log(date('M d H:i:s ').implode("\n", $o));
-		return 80026;
-	}
-*/
-	/*
-	$cmd = 'ip link set dev '.$s['name'].' up 2>&1';
-	error_log(date('M d H:i:s ').'INFO: starting '.$cmd);	
-	exec($cmd, $o, $rc);
-	if ($rc != 0) {
-		// Failed to activate it
-		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80027]);
-		error_log(date('M d H:i:s ').implode("\n", $o));
-		return 80027;
-	}
-
-	if (!preg_match('/^pnet[0-9]+$/', $s['name'])) {
-		// Forward all frames on non-cloud bridges
-		$cmd = 'echo 65535 > /sys/class/net/'.$s['name'].'/bridge/group_fwd_mask 2>&1';
-		exec($cmd, $o, $rc);
-		if ($rc != 0) {
-			// Failed to configure forward mask
-			error_log(date('M d H:i:s ').'ERROR: '.$cmd." --- ".$GLOBALS['messages'][80028]);
-			error_log(date('M d H:i:s ').implode("\n", $o));
-			return 80028;
-		}
-
-		// Disable multicast_snooping
-		$cmd = 'echo 0 > /sys/devices/virtual/net/'.$s['name'].'/bridge/multicast_snooping 2>&1';
-		exec($cmd, $o, $rc);
-		if ($rc != 0) {
-			// Failed to configure multicast_snooping
-			error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80071]);
-			error_log(date('M d H:i:s ').implode("\n", $o));
-			return 80071;
-		}
-	} 
-	if ( $s['count'] < 3 ) {
-		$cmd = 'brctl setageing '.$s['name'].' 0 2>&1';
-		exec($cmd, $o, $rc);
-		if ($rc != 0) {
-			error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80055]);
-			error_log(date('M d H:i:s ').implode("\n", $o));
-			return 80055;
-		}
-		$cmd = 'echo 2 > /sys/class/net/'.$s['name'].'/bridge/multicast_router  2>&1';
-		exec($cmd, $o, $rc);
-		if ($rc != 0) {
-			error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80055]);
-			error_log(date('M d H:i:s ').implode("\n", $o));
-			return 80055;
-		}
-	}
-	*/
-	return 0;
-}
-
-/**
  * Function to add a network.
  *
  * @param   Array   $p                  Parameters
@@ -99,10 +25,13 @@ function addNetwork($p) {
 		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80021]);
 		return 80021;
 	}
+	error_log(date('M d H:i:s ').'INFO: Add Network  '.$p['type']);
 	switch ($p['type']) {
 		default:
+			if (in_array($p['type'], listClouds())) {
+				error_log(date('M d H:i:s ').'INFO: Is Cloud '.$p['type']);
 				// Cloud already exists
-		        if (preg_match('/^pnet[0-9]+$/', $p['type'])) {
+			} else if (preg_match('/^pnet[0-9]+$/', $p['type'])) {
 				// Cloud does not exist
 				error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80056]);
 				return 80056;
@@ -116,9 +45,32 @@ function addNetwork($p) {
 			if (!isInterface($p['name'])) {
 				// Interface does not exist -> create bridge
 				return addOvs($p['name']);
-			} else if (isOvs($p['name'])) {
+			} else if (isOVS($p['name'])) {
 				// Bridge already present
 				return 0;
+			} else {
+				// Non bridge/OVS interface exist -> cannot create
+				error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80022]);
+				return 80022;
+			}
+			break;
+		case 'ovs':
+			if (!isInterface($p['name'])) {
+				// Interface does not exist -> create OVS
+				return addOvs($p['name']);
+			} else if (isOvs($p['name'])) {
+				// OVS already present
+				return 0;
+			} else if (isBridge($p['name'])) {
+				// Bridge exists -> delete it and add OVS
+				$rc = delBridge($p['name']);
+				if ($rc == 0) {
+					// Bridge deleted, create the OVS
+					return addOvs($p['name']);
+				} else {
+					// Failed to delete Bridge
+					return $rc;
+				}
 			} else {
 				// Non bridge/OVS interface exist -> cannot create
 				error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80022]);
@@ -136,26 +88,29 @@ function addNetwork($p) {
  * @return  int                         0 means ok
  */
 function addOvs($s) {
+
 	if (!isOvs($s)) {
-	$cmd = 'ovs-vsctl add-br '.$s.' 2>&1';
-	exec($cmd, $o, $rc);
-	if ($rc != 0) {
-		// Failed to add the OVS
-		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80023]);
-		error_log(date('M d H:i:s ').implode("\n", $o));
-		return 80023;
-	}
-	// ADD BPDU CDP option
-	$cmd = "ovs-vsctl set bridge ".$s." other-config:forward-bpdu=true";
-	exec($cmd, $o, $rc);
-	if ($rc == 0) {
-		return 0;
-	} else {
-		// Failed to add  OVS OPTION
-		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80023]);
-		error_log(date('M d H:i:s ').implode("\n", $o));
-		return 80023;
-	}
+		$cmd = 'ovs-vsctl add-br '.$s.' 2>&1';
+		exec($cmd, $o, $rc);
+		if ($rc != 0) {
+			// Failed to add the OVS
+			error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80023]);
+			error_log(date('M d H:i:s ').implode("\n", $s));
+			return 80023;
+		}
+		// ADD BPDU CDP option
+		$cmd = "ovs-vsctl set bridge ".$s." other-config:forward-bpdu=true";
+    	         error_log(date('M d H:i:s ').'INFO: Setting bpdu forwarding '.$cmd);
+
+		exec($cmd, $o, $rc);
+		if ($rc == 0) {
+			return 0;
+		} else {
+			// Failed to add  OVS OPTION
+			error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80023]);
+			error_log(date('M d H:i:s ').implode("\n", $s));
+			return 80023;
+		}
 	}
 }
 
@@ -272,26 +227,12 @@ function checkUsername($i) {
  * @return  int                         0 means ok
  */
 function connectInterface($n, $p) {
-	//For bridges and pnet interfaces
-	if (isBridge($n)) {
-		
-		//$cmd = 'brctl addif '.$n.' '.$p.' 2>&1';
-		$cmd = 'ovs-vsctl add-port '.$n.' '.$p.' 2>&1';
-		error_log(date('M d H:i:s ').'INFO: Adding Port '.$cmd);
+
+	// Mqke sure bridge exists before adding port
+	if (isOvs($n)) {
+		$cmd = 'ovs-vsctl add-port '.$n.' '.$p.' -- set interface '.$p.' type=internal 2>&1';
 		exec($cmd, $o, $rc);
-		if ($rc == 0) {
-			return 0;
-		} else {
-			// Failed to add interface to Bridge
-			//error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80030]);
-			//	error_log(date('M d H:i:s ').implode("\n", $o));
-			return 80030;
-		}
-		
-	} else if (isOvs($n)) {
-		$cmd = 'ovs-vsctl add-port '.$n.' '.$p.' 2>&1';
-		exec($cmd, $o, $rc);
-		       error_log(date('M d H:i:s ').'INFO: starting ovs '.$cmd);
+		error_log(date('M d H:i:s ').'INFO: starting ovs '.$cmd);
 		if ($rc == 0) {
 			return 0;
 		} else {
@@ -306,6 +247,8 @@ function connectInterface($n, $p) {
 		return 80029;
 	}
 }
+
+
 
 /**
  * Function to delete a bridge
@@ -337,7 +280,6 @@ function delBridge($s) {
  * @return  int                         0 means ok
  */
 function delOvs($s) {
-	/*
 	$cmd = 'ovs-vsctl del-br '.$s.' 2>&1';
 	exec($cmd, $o, $rc);
 	if ($rc == 0) {
@@ -348,7 +290,6 @@ function delOvs($s) {
 		error_log(date('M d H:i:s ').implode("\n", $o));
 		return 80024;
 	}
-	*/
 	return 0;
 }
 
@@ -556,23 +497,6 @@ function export($node_id, $n, $lab , $uid ) {
 }
 
 /**
- * Function to check if a bridge exists
- *
- * @param   string  $s                  Bridge name
- * @return  bool                        True if exists
- */
-function isBridge($s) {
-	$cmd = 'brctl show '.$s.' 2>&1';
-	exec($cmd, $o, $rc);
-	if (preg_match('/8000/', $o[1])) {
-		// "brctl show" on a ovs bridge or on a non-existent bridge return 0 -> check for 8000
-		return True;
-	} else {
-		return False;
-	}
-}
-
-/**
  * Function to check if a interface exists
  *
  * @param   string  $s                  Interface name
@@ -653,8 +577,11 @@ function prepareNode($n, $id, $t, $nets) {
 	exec($cmd, $o, $rc);
 	$uid = $o[0];
 	// Creating TAP interfaces
+	
+
+	 if ($n -> getNType() != 'docker') {
 	foreach ($n -> getEthernets() as $interface_id => $interface) {
-		 error_log(date('M d H:i:s ').'INFO: interface found '.print_r($interface));
+		error_log(date('M d H:i:s ').'INFO: interface found '.print_r($interface));
 		$tap_name = 'vunl'.$t.'_'.$id.'_'.$interface_id;
 		if (isset($nets[$interface -> getNetworkId()]) && $nets[$interface -> getNetworkId()] -> isCloud()) {
 			// Network is a Cloud
@@ -677,7 +604,7 @@ function prepareNode($n, $id, $t, $nets) {
 			// Failed to add TAP interface
 			return $rc;
 		}
-		error_log(date('M d H:i:s ').'INFO: Adding Interface    '.$interface -> getNetworkId());
+		//error_log(date('M d H:i:s ').'INFO: Adding Interface    '.$interface -> getNetworkId());
 		if ($interface -> getNetworkId() !== 0) {
 			// Connect interface to network
 			$rc = connectInterface($net_name, $tap_name);
@@ -686,6 +613,7 @@ function prepareNode($n, $id, $t, $nets) {
 				return $rc;
 			}
 		}
+	}
 	}
 	// Prepare SNAT for RDP 
 	// iptables -t nat -I INPUT -p tcp --dport 11455  -j SNAT --to 169.254.1.102
@@ -742,21 +670,22 @@ function prepareNode($n, $id, $t, $nets) {
 					return 80082;
 				}
 				error_log(date('M d H:i:s ').'INFO: Console Type for node is:   '.$n -> getConsole());
-                                if($n -> getCustomConsolePort() != '' ) {
-                                        $connPort = $n -> getCustomConsolePort();
-                                }
-                                elseif ($n -> getConsole() == 'vnc') {
-                                        $connPort = 5900;
-                                }
-                                elseif ($n -> getConsole() == 'rdp' ) {
-                                        $connPort = 3389;
-                                }
-                                elseif ($n -> getConsole() == 'ssh' ) {
-                                        $connPort = 22;
-                                }
-                                else {
-                                        $connPort = 23;
-                                }
+			error_log(date('M d H:i:s ').'INFO: Console Port for node is:   '.$n -> getCustomConsolePort());
+				if($n -> getCustomConsolePort() != '' ) {
+					$connPort = $n -> getCustomConsolePort();
+				}
+				elseif ($n -> getConsole() == 'vnc') {
+					$connPort = 5900;
+				}
+				elseif ($n -> getConsole() == 'rdp' ) {
+					$connPort = 3389;
+				}
+				elseif ($n -> getConsole() == 'ssh' ) {
+					$connPort = 22;
+				}
+				else {
+					$connPort = 23;
+				}
 				$cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format="{{ .State.Running }}" '.$n -> getUuid();
 
 				exec($cmd, $o, $rc);
@@ -911,9 +840,9 @@ function prepareNode($n, $id, $t, $nets) {
  * @return  int                         0 means ok
  */
 function start($n, $id, $t, $nets, $scripttimeout) {
-//	exec('cat '.print_r($id).' > out2.txt');
- $user = 'unl'.$t;
-//	file_put_contents("out2.txt",print_r($n).print_r($id));
+	//	exec('cat '.print_r($id).' > out2.txt');
+	$user = 'unl'.$t;
+	//	file_put_contents("out2.txt",print_r($n).print_r($id));
 	if ($n -> getStatus() !== 0) {
 		// Node is in running or building state
 		return 0;
@@ -1028,29 +957,38 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 		exec($cmd, $o, $rc);
 		error_log(date('M d H:i:s ').'INFO: importing '.$cmd);
 	}
+
+
+	if ($rc == 0 && $n -> getNType() == 'qemu' && $n -> getCpuLimit() === 1 ) {
+               sleep (1) ;
+               exec("grep T".$t."D".$id."- /proc/*/environ | cut -d/ -f3",$tpid,$rc);
+               if ( $rc == 0 && isset($tpid) && $tpid > 0 ) {
+                         error_log(date('M d H:i:s ').'INFO: qemu pid is '.$tpid[0]);
+                       exec("cgclassify -g pids:/cpulimit ".$tpid[0], $ro, $rc );
+               }
+        }
 	/*
-	 Network initialization of docker network
-	 eth0 is attached to the docker0 interface and is used for management E.G VNC
-	
-	 Each subsequent interface will available to be attached to other nodes/networks in the web interface
-	 eth1 will be the first available interface
-	
-	*/
+	   Network initialization of docker network
+	   eth0 is attached to the docker0 interface and is used for management E.G VNC
+
+	   Each subsequent interface will available to be attached to other nodes/networks in the web interface
+	   eth1 will be the first available interface
+
+	 */
 	if ($rc == 0 && $n -> getNType() == 'docker') {
 
 		// Note: should be able to reuse connectInterface function to replace most of the code below
 		// Need to configure each interface
 		foreach ($n -> getEthernets() as $interface_id => $interface) {
 
-			
+
 			// We specify the names of our interfaces
 			$tap_name = 'vunl'.$t.'_'.$id.'_'.$interface_id;
-			$dint_name = 'docker'.$t.'_'.$id.'_'.$interface_id;
-		//	$rc = addTap($tap_name, $user);
-			
-		//	$cmd = 'ip link add '.$dint_name.' type veth peer name '.$tap_name.'';
-		//	error_log(date('M d H:i:s ').'INFO: Creating veth interface '.$cmd);
-                  //      exec($cmd, $o, $rc);
+			//	$rc = addTap($tap_name, $user);
+
+			//	$cmd = 'ip link add '.$dint_name.' type veth peer name '.$tap_name.'';
+			//	error_log(date('M d H:i:s ').'INFO: Creating veth interface '.$cmd);
+			//      exec($cmd, $o, $rc);
 
 			// For the peer which we bridge to we need to find the peer interface name
 			if (isset($nets[$interface -> getNetworkId()]) && $nets[$interface -> getNetworkId()] -> isCloud()) {
@@ -1059,46 +997,34 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 			} else {
 				$net_name = 'vnet'.$t.'_'.$interface -> getNetworkId();
 			}
-			
+
 			// Here we brdige the interfaces
 			if ($interface -> getNetworkId() !== 0) {
 				// Connect interface to network
 				//$cmd = 'sudo ovs-vsctl add-port '.$net_name.' '.$tap_name;
-				 $cmd = 'ovs-docker add-port '.$net_name.' '.$tap_name.' '.$n -> getUuid().'';
-				error_log(date('M d H:i:s ').'INFO: Connecting interface'.$cmd);
-				exec($cmd, $o, $rc);
+				//$cmd = 'ovs-docker add-port '.$net_name.' '.$tap_name.' '.$n -> getUuid().'';
+		//		$cmd = 'ovs-vsctl add-port '.$net_name.' '.$tap_name.'';
+		//		error_log(date('M d H:i:s ').'INFO: Connecting interface '.$cmd);
+		//		exec($cmd, $o, $rc);
+				//-- set interface '.$tap_name.' type=internal
+			      $rc = connectInterface($net_name, $tap_name);
+                        if ($rc !== 0) {
+                                // Failed to connect interface to network
+                                return $rc;
+                        }
+
 			}
-			
-
-			// set interface status to up
-		//	$cmd = 'ip link set dev '.$tap_name.' up';
-			//$cmd = 'ip link set dev '.$dint_name.' up';
-		//	error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
-		//	exec($cmd, $o, $rc);
-
-			// We need to attach our interface to our docker instance
-			// For that, we grab the pid
-			//$cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format "{{ .State.Pid }}" '.$n -> getUuid();
-			//error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
-			//exec($cmd, $o, $rc);
-			
-			// Here we use the pid from above and attach it to the docker container
-			// ip link set netns ${PID} docker3_4_5 name eth0 address 22:ce:e0:99:04:05 up
-			//$cmd = 'ip link set netns '.$o[1].' '.$tap_name.' name eth'.($interface_id+1).' address '.'50:'.sprintf('%02x', $t).':'.sprintf('%02x', $id / 512).':'.sprintf('%02x', $id % 512).':00:'.sprintf('%02x', $interface_id).' up';
-		//	$cmd = 'ip link set dev '.$dint_name.' netns '.$o[1].'';
-	//		$cmd = 'ovs-docker add-port '.$net_name.' '.$tap_name.' '.$n -> getUuid().'';
-	//		error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
-	//		exec($cmd, $o, $rc);
 
 
-			// can be used if you wish to add routes
-			// /opt/unetlab/wrappers/nsenter -t ${PID} -n ip addr add 1.1.1.1/24 dev eth0
-			// /opt/unetlab/wrappers/nsenter -t ${PID} -n ip route add default via 1.1.1.254
 		}
+			$cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format "{{ .State.Pid }}" '.$n -> getUuid();
+			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
+			exec($cmd, $o, $rc);
 
-		// Start configuration process
-		//touch($n -> getRunningPath().'/.lock');
-		//$cmd = 'nohup /opt/unetlab/scripts/config_'.$n -> getTemplate().'.py -a put -i '.$n -> getUuid().' -f '.$n -> getRunningPath().'/startup-config -t '.($n -> getDelay() + 300).' > /dev/null 2>&1 &';
+			$cmd = "ip link set netns ".$o['1']." ".$tap_name." name ".$tap_name."  up 2>&1";
+			error_log(date('M d H:i:s ').'INFO: starting '.$cmd);
+			exec($cmd, $o, $rc);
+
 		$cmd = 'nohup /opt/unetlab/scripts/'.$GLOBALS['node_config'][$n -> getTemplate()].' -a put -i '.$n -> getUuid().' -f '.$n -> getRunningPath().'/startup-config -t '.($n -> getDelay() + 300).' > /dev/null 2>&1 &';
 		exec($cmd, $o, $rc);
 		error_log(date('M d H:i:s ').'INFO: importing '.$cmd);
@@ -1116,25 +1042,63 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 function stop($n) {
 	if ($n -> getStatus() != 0) {
 		if ($n -> getNType() == 'docker') {
-			$cmd = 'docker -H=tcp://127.0.0.1:4243 stop '.$n -> getUuid();
-		} else {
-			$cmd = 'fuser -n tcp -k -TERM '.$n -> getPort().' > /dev/null 2>&1';
-		}
-		error_log(date('M d H:i:s ').'INFO: stopping '.$cmd);
-		exec($cmd, $o, $rc);
-		// DELETE SNAT RULE RDP if needed
-		if ( $n -> getConsole() == 'rdp' ) {
-			$cmd = 'iptables -t nat -D INPUT -p tcp --dport '.$n -> getPort().' -j SNAT --to 169.254.1.102' ;
-			exec($cmd, $o, $rc);
+		 foreach ($n -> getEthernets() as $interface_id => $interface) {
+
+
+                        // We specify the names of our interfaces
+                        $tap_name = 'vunl'.$t.'_'.$id.'_'.$interface_id;
+                        $dint_name = 'docker'.$t.'_'.$id.'_'.$interface_id;
+                        //      $rc = addTap($tap_name, $user);
+
+                        //      $cmd = 'ip link add '.$dint_name.' type veth peer name '.$tap_name.'';
+                        //      error_log(date('M d H:i:s ').'INFO: Creating veth interface '.$cmd);
+                        //      exec($cmd, $o, $rc);
+
+                        // For the peer which we bridge to we need to find the peer interface name
+                        if (isset($nets[$interface -> getNetworkId()]) && $nets[$interface -> getNetworkId()] -> isCloud()) {
+                                // Network is a Cloud
+                                $net_name = $nets[$interface -> getNetworkId()] -> getNType();
+                        } else {
+                                $net_name = 'vnet'.$t.'_'.$interface -> getNetworkId();
+                        }
+
+                        // Here we brdige the interfaces
+                        if ($interface -> getNetworkId() !== 0) {
+                                // Connect interface to network
+                                //$cmd = 'sudo ovs-vsctl add-port '.$net_name.' '.$tap_name;
+                                $cmd = 'ovs-vsctl del-port '.$net_name.' '.$tap_name.'';
+                                error_log(date('M d H:i:s ').'INFO: Deleting interface'.$cmd);
+                                exec($cmd, $o, $rc);
+                        }
+
+			
 		}
 
-		if ($rc  == 0) {
-			return 0;
+			// Stop docker node
+			$cmd = 'docker -H=tcp://127.0.0.1:4243 stop '.$n -> getUuid();
+			error_log(date('M d H:i:s ').'INFO: stopping '.$cmd);
+                        exec($cmd, $o, $rc);
+			
+			
 		} else {
-			// Node is still running
-			error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80035]);
-			error_log(date('M d H:i:s ').implode("\n", $o));
-			return 80035;
+			$cmd = 'fuser -n tcp -k -TERM '.$n -> getPort().' > /dev/null 2>&1';
+		
+			error_log(date('M d H:i:s ').'INFO: stopping '.$cmd);
+			exec($cmd, $o, $rc);
+			// DELETE SNAT RULE RDP if needed
+			if ( $n -> getConsole() == 'rdp' ) {
+				$cmd = 'iptables -t nat -D INPUT -p tcp --dport '.$n -> getPort().' -j SNAT --to 169.254.1.102' ;
+				exec($cmd, $o, $rc);
+			}
+
+			if ($rc  == 0) {
+				return 0;
+			} else {
+				// Node is still running
+				error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80035]);
+				error_log(date('M d H:i:s ').implode("\n", $o));
+				return 80035;
+			}
 		}
 	} else {
 		return 0;

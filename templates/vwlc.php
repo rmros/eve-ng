@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'vWLC';
+$p['cpulimit'] = 1;
 $p['icon'] = 'vWLC.png';
 $p['cpu'] = 1;
 $p['ram'] = 2048;

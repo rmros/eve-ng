@@ -32,6 +32,7 @@
 
 $p['type'] = 'iol'; 
 $p['name'] = 'R'; 
+$p['cpulimit'] = 1;
 $p['icon'] = 'Router.png';
 $p['nvram'] = 1024; 
 $p['ram'] = 1024;

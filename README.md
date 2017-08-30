@@ -23,12 +23,10 @@ iface pnet2 inet manual
 * Linux bridge code is replaced for Open Virtual Switch
 * Docker support was mostly functional, but made a few small changes to make it function
 * Rewrote handler function for docker to support vnc, telnet and w/custom ports
-* Rezrote capture handler to capture traffic locally to docker node
+* Rewrote capture handler to capture traffic locally to docker node
 
 ## Known Issues and todos
 * Need to work on error checking for adding interfaces
 * Currently interfaces aren't removed when docker images are deleted
-* Unknown container error when deleting docker nodes (they are deleted though)
-* Docker mgmt interface attaches as eth0. Need to change this to soemthing such as mgmt0 as to not conflict with dataplace interfaces
-
-
+* Docker mgmt interface attaches as eth0. Need to change this to something such as mgmt0
+* Docker data interfaces attach with vunlx_x_x nomenclature

@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu'; 
 $p['name'] = 'BIGIP';
+$p['cpulimit'] = 1;
 $p['icon'] = 'Load Balancer.png';
 $p['cpu'] = 1; 
 $p['ram'] = 2048;

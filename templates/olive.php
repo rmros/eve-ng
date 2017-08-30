@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'Olive'; 
+$p['cpulimit'] = 1;
 $p['icon'] = 'JuniperMX.png';
 $p['cpu'] = 1;
 $p['ram'] = 4096; 

@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'Win';
+$p['cpulimit'] = 1;
 $p['icon'] = 'Desktop.png';
 $p['cpu'] = 1;
 $p['ram'] = 4096;

@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'Switch';
+$p['cpulimit'] = 1;
 $p['icon'] = 'Switch L3.png';
 $p['cpu'] = 1;
 $p['ram'] = 768;

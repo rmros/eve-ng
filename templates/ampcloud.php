@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu'; 
 $p['name'] = 'AMP_Cloud'; 
+$p['cpulimit'] = 1;
 $p['icon'] = 'AMPServer.png'; 
 $p['cpu'] = 4; 
 $p['ram'] = 8192; 

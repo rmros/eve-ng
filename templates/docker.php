@@ -32,6 +32,7 @@
 
 $p['type'] = 'docker'; 
 $p['name'] = 'Docker'; 
+$p['cpulimit'] = 1;
 $p['icon'] = 'Server.png';
 $p['ethernet'] = 1;
 $p['console'] = 'vnc';

@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'VSR1000'; 
+$p['cpulimit'] = 1;
 $p['icon'] = 'Router.png';
 $p['cpu'] = 2;
 $p['ram'] = 4096; 

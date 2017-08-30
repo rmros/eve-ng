@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'vQFX-RE';
+$p['cpulimit'] = 1;
 $p['icon'] = 'JunipervQFXre.png';
 $p['cpu'] = 2;
 $p['ram'] = 2048;

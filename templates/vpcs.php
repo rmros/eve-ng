@@ -32,6 +32,7 @@
 
 $p['type'] = 'vpcs'; 
 $p['name'] = 'VPC'; 
+$p['cpulimit'] = 1;
 $p['icon'] = 'Desktop.png';
 $p['ethernet'] = 1;
 ?>

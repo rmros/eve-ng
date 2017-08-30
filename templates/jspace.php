@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu'; 
 $p['name'] = 'JunosSpace'; 
+$p['cpulimit'] = 1;
 $p['icon'] = 'JunosSpace.png'; 
 $p['cpu'] = 2; 
 $p['ram'] = 8192; 

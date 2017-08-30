@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'vEOS';
+$p['cpulimit'] = 1;
 $p['icon'] = 'AristaSW.png';
 $p['cpu'] = 1;
 $p['ram'] = 2048;

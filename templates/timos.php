@@ -32,6 +32,7 @@
 
 $p['type'] = 'qemu';
 $p['name'] = '7750SR';
+$p['cpulimit'] = 1;
 $p['icon'] = 'Router.png';
 $p['cpu'] = 1;
 $p['ram'] = 2048; 
