@@ -3,21 +3,31 @@ This is an EVE-NG fork of just the html directory to add functionality.
 
 Fucntionality is currently incomplete, use at own risk.
 ## Installation
-Replace your /opt/unetlab/html directory with the files here
-Additionally, you will need to update your /etc/network/interfaces file
-```
-auto pnet2
-iface pnet2 inet manual
-    bridge_ports eth2
-    bridge_stp off
+Installation can be done ontop of an existing 2.0.77 EVE-NG install zith the following
 
-
-auto pnet2
-allow-ovs pnet2
-iface pnet2 inet manual
-  ovs_type OVSBridge
-  ovs_ports l2port
 ```
+cd  /opt/unetlab
+git clone https://github.com/breakintheweb/eve-ng.git
+mv html htmlbak
+mv eve-ng html
+mv /html/install.sh ./
+./install.sh
+
+```
+
+# Capture to docker node feature
+
+Firstly, you need to pull a docker image with vnc. The below image should work
+```
+docker pull danielguerra/wireshark-vnc
+```
+
+Next, you will need to create a docker node with this image inside your lab.
+
+Once the image is running you will need to add the container id to includes/.config 
+The format is labid_tenantid_nodeid
+
+You can also find it by using docker ps from the cli.
 
 ## List of changes/New features
 * Linux bridge code is replaced for Open Virtual Switch
@@ -26,6 +36,7 @@ iface pnet2 inet manual
 * Rewrote capture handler to capture traffic locally to docker node
 
 ## Known Issues and todos
+* Need to link the ovs pnet interfaces to physical interfaces
 * Need to work on error checking for adding interfaces
 * Currently interfaces aren't removed when docker images are deleted
 * Docker mgmt interface attaches as eth0. Need to change this to something such as mgmt0

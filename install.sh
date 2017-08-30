@@ -14,9 +14,7 @@ ExecStart=/usr/bin/dockerd
 EOF
 
 # Json config for docker
-cat > /etc/systemd/system/docker.service.d/service.conf << EOF
-# Json config for docker
-cat > /etc/systemd/system/docker.service.d/service.conf << EOF
+cat > /etc/docker/daemon.json << EOF
 {
  "hosts": ["tcp://127.0.0.1:4243", "unix:///var/run/docker.sock"],
  "storage-driver": "overlay2",
