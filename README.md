@@ -10,7 +10,7 @@ cd  /opt/unetlab
 git clone https://github.com/breakintheweb/eve-ng.git
 mv html htmlbak
 mv eve-ng html
-mv /html/install.sh ./
+mv html/install.sh ./
 ./install.sh
 
 ```
