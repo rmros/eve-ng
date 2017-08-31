@@ -30,9 +30,6 @@ php_value upload_max_filesize 180M
 	RewriteCond %{REQUEST_URI} ^/auth/
 	RewriteRule ^(.*)$ /auth.php [B,L,QSA]
 	
-	RewriteCond %{REQUEST_URI} ^/addCapture/
-        RewriteRule ^(.*)$ /capture.php?$1 [B,L,QSA]
-
 	RewriteCond %{REQUEST_URI} ^/legacy/
 	RewriteRule ^(.*)$ /themes/default/ [B,L,QSA]
 

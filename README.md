@@ -3,7 +3,7 @@ This is an EVE-NG fork of just the html directory to add functionality.
 
 Fucntionality is currently incomplete, use at own risk.
 ## Installation
-Installation can be done ontop of an existing 2.0.77 EVE-NG install zith the following
+Installation can be done ontop of an existing 2.0.77 EVE-NG install with the following
 
 ```
 cd  /opt/unetlab
@@ -29,6 +29,12 @@ The format is labid_tenantid_nodeid
 
 You can also find it by using docker ps from the cli.
 
+Note: The script which adds the capture inteface dosent have rights to modify the ovs db. I need to fix this but for the time being you can
+chmod 777 /var/run/openvswitch/db.sock
+or 
+chown www-data:www-data /var/run/openvswitch/db.sock
+
+
 ## List of changes/New features
 * Linux bridge code is replaced for Open Virtual Switch
 * Docker support was mostly functional, but made a few small changes to make it function
@@ -38,6 +44,5 @@ You can also find it by using docker ps from the cli.
 ## Known Issues and todos
 * Need to link the ovs pnet interfaces to physical interfaces
 * Need to work on error checking for adding interfaces
-* Currently interfaces aren't removed when docker images are deleted
 * Docker mgmt interface attaches as eth0. Need to change this to something such as mgmt0
 * Docker data interfaces attach with vunlx_x_x nomenclature

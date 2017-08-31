@@ -61,16 +61,6 @@ function addNetwork($p) {
 			} else if (isOvs($p['name'])) {
 				// OVS already present
 				return 0;
-			} else if (isBridge($p['name'])) {
-				// Bridge exists -> delete it and add OVS
-				$rc = delBridge($p['name']);
-				if ($rc == 0) {
-					// Bridge deleted, create the OVS
-					return addOvs($p['name']);
-				} else {
-					// Failed to delete Bridge
-					return $rc;
-				}
 			} else {
 				// Non bridge/OVS interface exist -> cannot create
 				error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80022]);
@@ -226,11 +216,15 @@ function checkUsername($i) {
  * @param   string  $p                  Interface name
  * @return  int                         0 means ok
  */
-function connectInterface($n, $p) {
+function connectInterface($n, $p, $nodeType) {
 
 	// Mqke sure bridge exists before adding port
 	if (isOvs($n)) {
-		$cmd = 'ovs-vsctl add-port '.$n.' '.$p.' -- set interface '.$p.' type=internal 2>&1';
+		if($nodeType == 'docker') {
+			$cmd = 'ovs-vsctl add-port '.$n.' '.$p.' -- set interface '.$p.' type=internal 2>&1';
+		} else {
+			$cmd = 'ovs-vsctl add-port '.$n.' '.$p.' 2>&1';
+		}
 		exec($cmd, $o, $rc);
 		error_log(date('M d H:i:s ').'INFO: starting ovs '.$cmd);
 		if ($rc == 0) {
@@ -249,29 +243,6 @@ function connectInterface($n, $p) {
 }
 
 
-
-/**
- * Function to delete a bridge
- *
- * @param   string  $s                  Bridge name
- * @return  int                         0 means ok
- */
-function delBridge($s) {
-	// Need to deactivate it
-	$cmd = 'ip link set dev '.$s.' down 2>&1';
-	exec($cmd, $o, $rc); 
-
-	$cmd = 'brctl delbr '.$s.' 2>&1';
-	exec($cmd, $o, $rc);
-	if ($rc == 0) {
-		return 0;
-	} else {
-		// Failed to delete the OVS
-		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80025]);
-		error_log(date('M d H:i:s ').implode("\n", $o));
-		return 80025;
-	}
-}
 
 /**
  * Function to delete an OVS
@@ -607,7 +578,7 @@ function prepareNode($n, $id, $t, $nets) {
 		//error_log(date('M d H:i:s ').'INFO: Adding Interface    '.$interface -> getNetworkId());
 		if ($interface -> getNetworkId() !== 0) {
 			// Connect interface to network
-			$rc = connectInterface($net_name, $tap_name);
+			$rc = connectInterface($net_name, $tap_name,$n -> getNType());
 			if ($rc !== 0) {
 				// Failed to connect interface to network
 				return $rc;
@@ -958,15 +929,16 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 		error_log(date('M d H:i:s ').'INFO: importing '.$cmd);
 	}
 
-
-	if ($rc == 0 && $n -> getNType() == 'qemu' && $n -> getCpuLimit() === 1 ) {
-               sleep (1) ;
-               exec("grep T".$t."D".$id."- /proc/*/environ | cut -d/ -f3",$tpid,$rc);
-               if ( $rc == 0 && isset($tpid) && $tpid > 0 ) {
-                         error_log(date('M d H:i:s ').'INFO: qemu pid is '.$tpid[0]);
-                       exec("cgclassify -g pids:/cpulimit ".$tpid[0], $ro, $rc );
-               }
-        }
+	
+	//if ($rc == 0 && $n -> getNType() == 'qemu' && $n -> getCpuLimit() === 1 ) {
+         //      sleep (1) ;
+          //     exec("grep T".$t."D".$id."- /proc/*/environ | cut -d/ -f3",$tpid,$rc);
+           //    if ( $rc == 0 && isset($tpid) && $tpid > 0 ) {
+            //             error_log(date('M d H:i:s ').'INFO: qemu pid is '.$tpid[0]);
+             //          exec("cgclassify -g pids:/cpulimit ".$tpid[0], $ro, $rc );
+              // }
+       // }
+	
 	/*
 	   Network initialization of docker network
 	   eth0 is attached to the docker0 interface and is used for management E.G VNC
@@ -977,18 +949,11 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 	 */
 	if ($rc == 0 && $n -> getNType() == 'docker') {
 
-		// Note: should be able to reuse connectInterface function to replace most of the code below
-		// Need to configure each interface
 		foreach ($n -> getEthernets() as $interface_id => $interface) {
 
 
 			// We specify the names of our interfaces
 			$tap_name = 'vunl'.$t.'_'.$id.'_'.$interface_id;
-			//	$rc = addTap($tap_name, $user);
-
-			//	$cmd = 'ip link add '.$dint_name.' type veth peer name '.$tap_name.'';
-			//	error_log(date('M d H:i:s ').'INFO: Creating veth interface '.$cmd);
-			//      exec($cmd, $o, $rc);
 
 			// For the peer which we bridge to we need to find the peer interface name
 			if (isset($nets[$interface -> getNetworkId()]) && $nets[$interface -> getNetworkId()] -> isCloud()) {
@@ -1000,14 +965,8 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 
 			// Here we brdige the interfaces
 			if ($interface -> getNetworkId() !== 0) {
-				// Connect interface to network
-				//$cmd = 'sudo ovs-vsctl add-port '.$net_name.' '.$tap_name;
-				//$cmd = 'ovs-docker add-port '.$net_name.' '.$tap_name.' '.$n -> getUuid().'';
-		//		$cmd = 'ovs-vsctl add-port '.$net_name.' '.$tap_name.'';
-		//		error_log(date('M d H:i:s ').'INFO: Connecting interface '.$cmd);
-		//		exec($cmd, $o, $rc);
-				//-- set interface '.$tap_name.' type=internal
-			      $rc = connectInterface($net_name, $tap_name);
+			// Connect interface to network
+			      $rc = connectInterface($net_name, $tap_name, $n -> getNType());
                         if ($rc !== 0) {
                                 // Failed to connect interface to network
                                 return $rc;
@@ -1040,32 +999,28 @@ function start($n, $id, $t, $nets, $scripttimeout) {
  * @return  int                         0 means ok
  */
 function stop($n) {
+
+
+	//extract the tenant and node id from uuid, a bad way of doing things :/
+	$tenantNodeId = explode("-",$n -> getUuid());
+
 	if ($n -> getStatus() != 0) {
 		if ($n -> getNType() == 'docker') {
 		 foreach ($n -> getEthernets() as $interface_id => $interface) {
-
-
                         // We specify the names of our interfaces
-                        $tap_name = 'vunl'.$t.'_'.$id.'_'.$interface_id;
-                        $dint_name = 'docker'.$t.'_'.$id.'_'.$interface_id;
-                        //      $rc = addTap($tap_name, $user);
-
-                        //      $cmd = 'ip link add '.$dint_name.' type veth peer name '.$tap_name.'';
-                        //      error_log(date('M d H:i:s ').'INFO: Creating veth interface '.$cmd);
-                        //      exec($cmd, $o, $rc);
+                        $tap_name = 'vunl'.$tenantNodeId[5].'_'.$tenantNodeId[6].'_'.$interface_id;
 
                         // For the peer which we bridge to we need to find the peer interface name
                         if (isset($nets[$interface -> getNetworkId()]) && $nets[$interface -> getNetworkId()] -> isCloud()) {
                                 // Network is a Cloud
                                 $net_name = $nets[$interface -> getNetworkId()] -> getNType();
                         } else {
-                                $net_name = 'vnet'.$t.'_'.$interface -> getNetworkId();
+                                $net_name = 'vnet'.$tenantNodeId[5].'_'.$interface -> getNetworkId();
                         }
 
                         // Here we brdige the interfaces
                         if ($interface -> getNetworkId() !== 0) {
                                 // Connect interface to network
-                                //$cmd = 'sudo ovs-vsctl add-port '.$net_name.' '.$tap_name;
                                 $cmd = 'ovs-vsctl del-port '.$net_name.' '.$tap_name.'';
                                 error_log(date('M d H:i:s ').'INFO: Deleting interface'.$cmd);
                                 exec($cmd, $o, $rc);
@@ -1076,7 +1031,7 @@ function stop($n) {
 
 			// Stop docker node
 			$cmd = 'docker -H=tcp://127.0.0.1:4243 stop '.$n -> getUuid();
-			error_log(date('M d H:i:s ').'INFO: stopping '.$cmd);
+			error_log(date('M d H:i:s ').'INFO: stopping aa'.$cmd);
                         exec($cmd, $o, $rc);
 			
 			
