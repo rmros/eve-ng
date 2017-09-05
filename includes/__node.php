@@ -988,13 +988,11 @@ class Node {
 				$flags .= ' -nographic ';
 			}
 			$qnic = ( $this -> getQemu_nic() != "" ) ? $this -> getQemu_nic() : ( isset($p['qemu_nic']) ? $p['qemu_nic'] : "" );
-			if ( preg_match('/^[0-9a-zA-Z-]+$/', $qnic)) {
-				// Setting non default NIC driver
+			
+			// If a nic drive is specified, use it or set default
+			if ( $qnic != '' ) {
 				$flags .= str_replace('%NICDRIVER%', $qnic, $this -> flags_eth);
-			} else if ( $qnic != '' ) {
-				// Invalid NIC driver
-				error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80017]);
-				return Array(False, False);
+				
 			} else {
 				// Setting default NIC driver
 				$flags .= str_replace('%NICDRIVER%', 'e1000', $this -> flags_eth);

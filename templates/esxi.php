@@ -33,7 +33,7 @@
 $p['type'] = 'qemu';
 $p['name'] = 'esxi';
 $p['cpulimit'] = 1;
-$p['icon'] = 'Server.png';
+$p['icon'] = 'ESXi.png';
 $p['cpu'] = 2;
 $p['ram'] = 4096; 
 $p['ethernet'] = 4; 

@@ -721,7 +721,7 @@ function apiGetLabNodeTemplate($p) {
                                 'name' => $GLOBALS['messages'][70035],
                                 'type' => 'list',
                                 'value' => ( isset($p['qemu_nic'])?$p['qemu_nic']:"") ,
-				'list' => Array ( 'virtio-net-pci' => 'virtio-net-pci' ,'e1000' => 'e1000', '' => 'tpl'.( isset($p['qemu_nic'])?'('.$p['qemu_nic'].')':"(e1000)")));
+				'list' => Array ( 'virtio-net-pci' => 'virtio-net-pci' ,'ne2k_pci' => 'ne2k_pci','e1000' => 'e1000', '' => 'tpl'.( isset($p['qemu_nic'])?'('.$p['qemu_nic'].')':"(e1000)")));
 
                         $output['data']['options']['qemu_options'] =  Array(
                                 'name' => $GLOBALS['messages'][70030],
