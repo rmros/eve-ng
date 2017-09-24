@@ -19,7 +19,7 @@
  * @param   Array   $p                  Parameters
  * @return  int                         0 means ok
  */
-function cliAddNetwork($p) {
+function addNetwork($p) {
 	if (!isset($p['name']) || !isset($p['type'])) {
 		// Missing mandatory parameters
 		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80021]);
@@ -769,6 +769,7 @@ function prepareNode($n, $id, $t, $nets) {
 					case 'vmx':
 					case 'vqfxre':
 					case 'vsrx':
+					case 'junipervrr':
 						copy (  $n -> getRunningPath().'/startup-config',  $n -> getRunningPath().'/juniper.conf');
 						$isocmd = 'mkisofs -o '.$n -> getRunningPath().'/config.iso -l --iso-level 2 '.$n -> getRunningPath().'/juniper.conf' ;
 						exec($isocmd, $o, $rc);
@@ -883,8 +884,8 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 		$flags .= ' -drive file=minidisk,if=virtio,bus=0,unit=1,cache=none' ;
 	}
 
-	if (( $n->getTemplate() == 'vmx'  || $n->getTemplate() == 'vsrx' || $n->getTemplate() == 'vqfxre' ) && is_file($n -> getRunningPath().'/config.iso') && !is_file($n -> getRunningPath().'/.configured') && $n -> getConfig() != 0)  {
-		$flags .= ' -drive file=config.iso,if=virtio,media=cdrom,index=2' ;
+	if (( $n->getTemplate() == 'vmx'  || $n->getTemplate() == 'vsrx' || $n->getTemplate() == 'vqfxre' || $n->getTemplate() == 'junipervrr' ) && is_file($n -> getRunningPath().'/config.iso') && !is_file($n -> getRunningPath().'/.configured') && $n -> getConfig() != 0)  {	
+	$flags .= ' -drive file=config.iso,if=virtio,media=cdrom,index=2' ;
 	}
 
 	if ((  $n->getTemplate() == 'vsrxng' ) && is_file($n -> getRunningPath().'/config.iso') && !is_file($n -> getRunningPath().'/.configured') && $n -> getConfig() != 0)  {

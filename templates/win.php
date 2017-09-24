@@ -40,5 +40,5 @@ $p['ethernet'] = 1;
 $p['console'] = 'vnc';
 $p['qemu_arch'] = 'x86_64';
 $p['qemu_version'] = '2.0.2';
-$p['qemu_options'] = '-machine type=pc,accel=kvm -cpu qemu64,+fsgsbase -vga std -usbdevice tablet -boot order=cd -fdb /opt/qemu/share/qemu/virtio-win-drivers.img';
+$p['qemu_options'] = '-machine type=pc-1.0,accel=kvm -cpu qemu64,+fsgsbase -vga std -usbdevice tablet -boot order=cd -fdb /opt/qemu/share/qemu/virtio-win-drivers.img';
 ?>
