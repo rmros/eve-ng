@@ -21,6 +21,7 @@
  * @param   bool    $o                  True if need to add ID to name
  * @return  Array                       Return code (JSend data)
  */
+//require_once('cli.php');
 function apiAddLabNetwork($lab, $p, $o) {
 	// Adding network_id to network_name if required
 
@@ -29,7 +30,8 @@ function apiAddLabNetwork($lab, $p, $o) {
 
 	// Adding the network
 	$rc = $lab -> addNetwork($p);
-
+//	$cmd = 'ovs-vsctl add-br '.$p['name'].$id.' 2>&1';
+  //              exec($cmd, $o, $rc);
 	if ($rc === 0) {
 		// Network added
 		$output['code'] = 201;

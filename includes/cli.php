@@ -19,13 +19,13 @@
  * @param   Array   $p                  Parameters
  * @return  int                         0 means ok
  */
-function addNetwork($p) {
+function cliAddNetwork($p) {
 	if (!isset($p['name']) || !isset($p['type'])) {
 		// Missing mandatory parameters
 		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80021]);
 		return 80021;
 	}
-	error_log(date('M d H:i:s ').'INFO: Add Network  '.$p['type']);
+	error_log(date('M d H:i:s ').'INFO: Adding Network '.$p['name'].' '.$p['type']);
 	switch ($p['type']) {
 		default:
 			if (in_array($p['type'], listClouds())) {
@@ -80,7 +80,7 @@ function addNetwork($p) {
 function addOvs($s) {
 
 	if (!isOvs($s)) {
-		$cmd = 'ovs-vsctl add-br '.$s.' 2>&1';
+		$cmd = 'sudo ovs-vsctl add-br '.$s.' 2>&1';
 		exec($cmd, $o, $rc);
 		if ($rc != 0) {
 			// Failed to add the OVS
@@ -930,14 +930,14 @@ function start($n, $id, $t, $nets, $scripttimeout) {
 	}
 
 	
-	//if ($rc == 0 && $n -> getNType() == 'qemu' && $n -> getCpuLimit() === 1 ) {
-         //      sleep (1) ;
-          //     exec("grep T".$t."D".$id."- /proc/*/environ | cut -d/ -f3",$tpid,$rc);
-           //    if ( $rc == 0 && isset($tpid) && $tpid > 0 ) {
-            //             error_log(date('M d H:i:s ').'INFO: qemu pid is '.$tpid[0]);
-             //          exec("cgclassify -g pids:/cpulimit ".$tpid[0], $ro, $rc );
-              // }
-       // }
+	if ($rc == 0 && $n -> getNType() == 'qemu' && $n -> getCpuLimit() === 1 ) {
+               sleep (1) ;
+               exec("grep T".$t."D".$id."- /proc/*/environ | cut -d/ -f3",$tpid,$rc);
+               if ( $rc == 0 && isset($tpid) && $tpid > 0 ) {
+                         error_log(date('M d H:i:s ').'INFO: qemu pid is '.$tpid[0]);
+                       exec("cgclassify -g pids:/cpulimit ".$tpid[0], $ro, $rc );
+               }
+        }
 	
 	/*
 	   Network initialization of docker network

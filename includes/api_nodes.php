@@ -823,6 +823,28 @@ function apiStartLabNode($lab, $id, $tenant) {
 	return $output;
 }
 
+function apiAddIntOn($lab, $tenant) {
+        $cmd = 'sudo /opt/unetlab/wrappers/unl_wrapper';
+        $cmd .= ' -a addinton';
+        $cmd .= ' -T '.$tenant;
+        $cmd .= ' -F "'.$lab -> getPath().'/'.$lab -> getFilename().'"';
+        $cmd .= ' 2>> /opt/unetlab/data/Logs/unl_wrapper.txt';
+        exec($cmd, $o, $rc);
+        if ($rc == 0) {
+                // Nodes started
+                $output['code'] = 200;
+                $output['status'] = 'success';
+                $output['message'] = $GLOBALS['messages'][80048];
+        } else {
+                // Failed to start
+                $output['code'] = 400;
+                $output['status'] = 'fail';
+                $output['message'] = $GLOBALS['messages'][$rc];
+        }
+        return $output;
+}
+
+
 /**
  * Function to start all nodes.
  *

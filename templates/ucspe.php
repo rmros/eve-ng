@@ -32,11 +32,11 @@
 
 $p['type'] = 'qemu';
 $p['name'] = 'UCS-PE';
-$p['cpulimit'] = 1;
 $p['icon'] = 'Server.png';
 $p['cpu'] = 1;
-$p['ram'] = 2048;
-$p['ethernet'] = 1;
+$p['cpulimit'] = 1;
+$p['ram'] = 1024;
+$p['ethernet'] = 3;
 $p['console'] = 'vnc';
 $p['qemu_arch'] = 'x86_64';
 $p['qemu_options'] = '-machine type=pc-1.0,accel=kvm -vga std -usbdevice tablet -boot order=dc';

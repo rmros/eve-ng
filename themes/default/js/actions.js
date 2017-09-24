@@ -612,9 +612,9 @@ $(document).on('change input', 'input[name="node[count]"]', function(e){
 // plug show/hide event
 
 $(document).on('mouseover','.node_frame, .network_frame', function (e) {
-    if ((ROLE == 'admin' || ROLE == 'editor') && LOCK == 0 && ( $(this).attr('data-status') == 0 || $(this).attr('data-status') == undefined ) && !$('#lab-viewport').hasClass('freeSelectMode') ) { 
+   // if ((ROLE == 'admin' || ROLE == 'editor') && LOCK == 0 && ( $(this).attr('data-status') == 0 || $(this).attr('data-status') == undefined ) && !$('#lab-viewport').hasClass('freeSelectMode') ) { 
          $(this).find('.tag').removeClass("hidden");
-        }
+     //   }
 }) ; 
 
 $(document).on('mouseover','.ep' , function (e) {
