@@ -189,6 +189,19 @@ class Interfc {
 			return 10008;
 		}
 	}
+        /**
+         * Method to get network name.
+         *
+         * @return  string                      ID
+         */
+        public function getId() {
+                if (isset($this -> id)) {
+                        return $this -> id;
+                } else {
+                        // By default return an empty string
+                        return '';
+                }
+        }
 
 	/**
 	 * Method to get network name.

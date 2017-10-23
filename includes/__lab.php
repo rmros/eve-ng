@@ -894,7 +894,37 @@ class Lab {
 			return Array();
 		}
 	}
-
+	 /**
+         * Method to get all ethernets for all nodes
+         *
+         * @return  Array                       Lab ethernets all
+         */
+/*
+	public function getNodesEthernets($id,$p) {
+		foreach($this -> getNodes() as $node_id=> $node) {
+			if($node_id == $id) {
+			foreach($node -> getEthernets() as $interface_id => $interface) {
+				if (!empty($interface->getNetworkId())) {
+					$ethernetsarray["vnet".$this -> tenant."_".$interface->getNetworkId()][] = "vunl".$this -> tenant."_".$node_id."_".$interface->getId();	
+				}
+			}		
+		}
+		}
+			return $ethernetsarray;
+        }
+*/
+     public function getNodesEthernets($id,$p) {
+		$node =  $this -> nodes[$id];     
+		foreach ($p as $interface_id => $interface_link) {
+			$int=$interface_id;
+		}
+		foreach($node -> getEthernets() as $interface_id => $interface) {
+                                if ($interface->getId() == $int) {
+                                        $ethernetsarray["vnet".$this -> tenant."_".$interface->getNetworkId()] = "vunl".$this -> tenant."_".$id."_".$interface->getId();
+                                }
+                        }
+                  return $ethernetsarray;
+			}
 	/**
 	 * Method to get all lab objects.
 	 *
@@ -1013,7 +1043,7 @@ class Lab {
 	}
 
 	/**
-	 * Method to connect a node to a network or to a remote node.
+	 * Methed to connect a node to a network or to a remote node.
 	 *
 	 * @param   int     $n                  Node ID
 	 * @param   Array   $p                  Array of interfaces to link (index = interface_id, value = remote)

@@ -21,6 +21,8 @@
  * @param   bool    $o                  True if need to add ID to name
  * @return  Array                       Return code (JSend data)
  */
+require_once(BASE_DIR.'/html/includes/cli.php');
+
 function apiAddLabNode($lab, $p, $o) {
 	if (isset($p['numberNodes'])) 
 		$numberNodes = $p['numberNodes'];
@@ -228,6 +230,15 @@ function apiExportLabNodes($lab, $tenant) {
 function apiEditLabNodeInterfaces($lab, $id, $p) {
 	// Edit node interfaces
 	$rc = $lab -> connectNode($id, $p);
+//	error_log(date('M d H:i:s ').'INFO: connectnode  '.print_r($id));
+//foreach ($lab -> getNodesEthernets() as $node) {
+
+
+//		}
+file_put_contents('/opt/unetlab/html/p.txt', print_r($lab -> getNodesEthernets($id,$p) , true), FILE_APPEND);	
+file_put_contents('/opt/unetlab/html/id.txt', print_r($p , true), FILE_APPEND);	
+		//}
+$rc = connectInterface2($lab -> getNodesEthernets($id,$p));
 
 	if ($rc === 0) {
 		$output['code'] = 201;

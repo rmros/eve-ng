@@ -19,7 +19,7 @@
  * @param   Array   $p                  Parameters
  * @return  int                         0 means ok
  */
-function addNetwork($p) {
+function addCliNetwork($p) {
 	if (!isset($p['name']) || !isset($p['type'])) {
 		// Missing mandatory parameters
 		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80021]);
@@ -80,12 +80,13 @@ function addNetwork($p) {
 function addOvs($s) {
 
 	if (!isOvs($s)) {
-		$cmd = 'sudo ovs-vsctl add-br '.$s.' 2>&1';
+		$cmd = 'ovs-vsctl add-br '.$s.' 2>&1';
 		exec($cmd, $o, $rc);
 		if ($rc != 0) {
 			// Failed to add the OVS
+			//error_log(date('M d H:i:s ').'INFO: Failed adding net'.$cmd);
 			error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80023]);
-			error_log(date('M d H:i:s ').implode("\n", $s));
+			error_log(date('M d H:i:s ').implode("\n", $o));
 			return 80023;
 		}
 		// ADD BPDU CDP option
@@ -241,7 +242,38 @@ function connectInterface($n, $p, $nodeType) {
 		return 80029;
 	}
 }
+/**
+ * Function to connect an interface (TAP) to a network (Bridge/OVS)
+ *
+ * @param   string  $n                  Network name
+ * @param   string  $p                  Interface name
+ * @return  int                         0 means ok
+ */
+function connectInterface2($intArray) {
+foreach($intArray as $n => $p) { 
 
+error_log(date('M d H:i:s ').'INFO: online connect iface '.$p);
+
+        // Mqke sure bridge exists before adding port
+        if (isOvs($n)) {
+                $cmd = 'ovs-vsctl --may-exist add-port '.$n.' '.$p.' 2>&1';
+                exec($cmd, $o, $rc);
+                error_log(date('M d H:i:s ').'INFO: starting ovs '.$cmd);
+                if ($rc == 0) {
+                        return 0;
+                } else {
+                        // Failed to add interface to OVS
+                        error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80031]);
+                        error_log(date('M d H:i:s ').implode("\n", $o));
+                        return 80031;
+                }
+        } else {
+                // Network not found
+                error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80029]);
+                return 80029;
+        }
+}
+}
 
 
 /**
@@ -263,6 +295,7 @@ function delOvs($s) {
 	}
 	return 0;
 }
+
 
 /**
  * Function to delete a TAP interface
@@ -292,7 +325,20 @@ function delTap($s) {
 		return 0;
 	}
 }
+/**
+ * Function to delete a ovs-port interface
+ *
+ * @param   string  $s                  Interface name
+ * @return  int                         0 means ok
+ */
+function delOvsPort($s) {
+                // Remove interface from OVS switches
+                $cmd = 'ovs-vsctl del-port '.$s.' 2>&1';
+                exec($cmd, $o, $rc);
 
+                // Interface does not exist
+                return 0;
+}
 /**
  * Function to push startup-config to a file
  *

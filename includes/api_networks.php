@@ -21,17 +21,22 @@
  * @param   bool    $o                  True if need to add ID to name
  * @return  Array                       Return code (JSend data)
  */
-//require_once('cli.php');
+require_once(BASE_DIR.'/html/includes/cli.php');
+
 function apiAddLabNetwork($lab, $p, $o) {
 	// Adding network_id to network_name if required
 
 	$id = $lab -> getFreeNetworkId();
 	if ($o == True && isset($p['name'])) $p['name'] = $p['name'].$id;
 
-	// Adding the network
+	// Grabs the next free network number and adds it to the xml config
 	$rc = $lab -> addNetwork($p);
-//	$cmd = 'ovs-vsctl add-br '.$p['name'].$id.' 2>&1';
-  //              exec($cmd, $o, $rc);
+	
+	// Normally interfaces are only added when the nodes are off, here we do a hot add
+	// todo: check if node is running and check for failure
+	$tempName = "vnet".$lab->getTenant()."_".$id;
+	$rcaaa = addOvs($tempName);
+	
 	if ($rc === 0) {
 		// Network added
 		$output['code'] = 201;
@@ -60,7 +65,8 @@ function apiDeleteLabNetwork($lab, $id) {
 	// Deleting the network
 	$network = $lab->getNetworks()[$id];
 	$rc = $lab -> deleteNetwork($id);
-
+	 //delete ovs
+        delOvs("vnet".$lab->getTenant()."_".$id);
 	if ($rc === 0) {
 		$output['code'] = 200;
 		$output['status'] = 'success';
