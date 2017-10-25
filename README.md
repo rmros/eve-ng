@@ -3,7 +3,7 @@ This is an EVE-NG fork of just the html directory to add functionality.
 
 Fucntionality is currently incomplete, use at own risk.
 ## Installation
-Installation can be done ontop of an existing 2.0.77 EVE-NG install with the following
+Installation can be done ontop of an existing 2.0.79 EVE-NG install with the following
 
 ```
 cd  /opt/unetlab
@@ -12,8 +12,20 @@ mv html htmlbak
 mv eve-ng html
 mv html/install.sh ./
 ./install.sh
-
 ```
+
+
+The install script does the following;
+backup /etc/network/interfaces to interfaces.bak
+installs docker.io
+modifies docker startup script and configuration
+modifies openvswitch to fix issue
+modifies apache2 startup to fix issue
+add new /etc/network/interfaces for ovs
+
+## Uninstallation
+Uninstallation should be as easy as restoring the html directory and interfaces file
+
 
 # Capture to docker node feature
 

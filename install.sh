@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Backup current network cofnig
+# Backup current network config
 cp /etc/network/interfaces ./interfaces.bak
 
 
@@ -130,3 +130,4 @@ iface pnet9 inet manual
   ovs_type OVSBridge
   ovs_ports l2port
 EOF
+sudo systemctl restart networking.service
