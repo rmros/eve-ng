@@ -859,7 +859,7 @@ Free select
 }
 /* navberoverwrite */
 .navbar-static-top {
-  background-color: #263339 !important;
+  background-color: #500000 !important;
 }
 
 .nav .open > a, .nav .open > a:focus, .nav .open > a:hover {
@@ -872,7 +872,7 @@ Free select
 }
 
 .dropdown-main {
-    background-color: #263339 !important;
+    background-color: #500000 !important;
 }
 .dropdown-main > li > a {
     color: #a6b3b9 !important;
@@ -888,10 +888,10 @@ Free select
 .jsplumb-overlay { z-index:1002; }
 
 body {
-   background-color: #263339 !important;
+   background-color: #500000 !important;
 }
 .login-box-body, .register-box-body {
-    background: #263339 !important;
+    background: #500000 !important;
     padding: 20px !important;
     border-width: 1px !important;
     border-style: solid !important;
@@ -901,7 +901,7 @@ body {
 
 #btnlogin {
    color: #aaa !important ;
-   background-color: #263339 !important;
+   background-color: #500000 !important;
    border: 1px !important;
    border-style: solid !important;
 }
@@ -915,7 +915,7 @@ body {
  background-color: #eee !important;
 }
 .modal-header {
-  background-color: #263339 !important;
+  background-color: #500000 !important;
 }
 .modal-title {
   color: #a6b3b9 !important ;

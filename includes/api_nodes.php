@@ -230,16 +230,13 @@ function apiExportLabNodes($lab, $tenant) {
 function apiEditLabNodeInterfaces($lab, $id, $p) {
 	// Edit node interfaces
 	$rc = $lab -> connectNode($id, $p);
-//	error_log(date('M d H:i:s ').'INFO: connectnode  '.print_r($id));
-//foreach ($lab -> getNodesEthernets() as $node) {
-
-
-//		}
-file_put_contents('/opt/unetlab/html/p.txt', print_r($lab -> getNodesEthernets($id,$p) , true), FILE_APPEND);	
-file_put_contents('/opt/unetlab/html/id.txt', print_r($p , true), FILE_APPEND);	
-		//}
-$rc = connectInterface2($lab -> getNodesEthernets($id,$p));
-
+	
+	// connect interfaces in ovs
+	// currently no checking is performed
+	// todo: should check if node is running and bypass if node is off
+	//$rc2 = connectInterface2($lab -> getNodesEthernets($id,$p));
+	$connectIntA=$lab -> getNodesEthernets($id,$p);
+	connectInterface($connectIntA[0],$connectIntA[1],$connectIntA[2]);	
 	if ($rc === 0) {
 		$output['code'] = 201;
 		$output['status'] = 'success';

@@ -32,7 +32,7 @@ var UPDATEID;
 var LOCK = 0 ; 
 var isIE = getInternetExplorerVersion() > -1;
 var FOLLOW_WRAPPER_IMG_STATE = 'resized'
-var EVE_VERSION = "2.0.3-79-BITW";
+var EVE_VERSION = "3.0.0-Red-Edition";
 
 $(document).ready(function() {
 	if ($.cookie('privacy') != 'true') {

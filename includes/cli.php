@@ -19,7 +19,7 @@
  * @param   Array   $p                  Parameters
  * @return  int                         0 means ok
  */
-function addCliNetwork($p) {
+function addNetwork($p) {
 	if (!isset($p['name']) || !isset($p['type'])) {
 		// Missing mandatory parameters
 		error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80021]);
@@ -218,13 +218,12 @@ function checkUsername($i) {
  * @return  int                         0 means ok
  */
 function connectInterface($n, $p, $nodeType) {
-
 	// Mqke sure bridge exists before adding port
 	if (isOvs($n)) {
 		if($nodeType == 'docker') {
 			$cmd = 'ovs-vsctl add-port '.$n.' '.$p.' -- set interface '.$p.' type=internal 2>&1';
 		} else {
-			$cmd = 'ovs-vsctl add-port '.$n.' '.$p.' 2>&1';
+			$cmd = 'ovs-vsctl --may-exist add-port '.$n.' '.$p.' 2>&1';
 		}
 		exec($cmd, $o, $rc);
 		error_log(date('M d H:i:s ').'INFO: starting ovs '.$cmd);
@@ -242,39 +241,6 @@ function connectInterface($n, $p, $nodeType) {
 		return 80029;
 	}
 }
-/**
- * Function to connect an interface (TAP) to a network (Bridge/OVS)
- *
- * @param   string  $n                  Network name
- * @param   string  $p                  Interface name
- * @return  int                         0 means ok
- */
-function connectInterface2($intArray) {
-foreach($intArray as $n => $p) { 
-
-error_log(date('M d H:i:s ').'INFO: online connect iface '.$p);
-
-        // Mqke sure bridge exists before adding port
-        if (isOvs($n)) {
-                $cmd = 'ovs-vsctl --may-exist add-port '.$n.' '.$p.' 2>&1';
-                exec($cmd, $o, $rc);
-                error_log(date('M d H:i:s ').'INFO: starting ovs '.$cmd);
-                if ($rc == 0) {
-                        return 0;
-                } else {
-                        // Failed to add interface to OVS
-                        error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80031]);
-                        error_log(date('M d H:i:s ').implode("\n", $o));
-                        return 80031;
-                }
-        } else {
-                // Network not found
-                error_log(date('M d H:i:s ').'ERROR: '.$GLOBALS['messages'][80029]);
-                return 80029;
-        }
-}
-}
-
 
 /**
  * Function to delete an OVS

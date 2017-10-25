@@ -899,32 +899,23 @@ class Lab {
          *
          * @return  Array                       Lab ethernets all
          */
-/*
-	public function getNodesEthernets($id,$p) {
-		foreach($this -> getNodes() as $node_id=> $node) {
-			if($node_id == $id) {
-			foreach($node -> getEthernets() as $interface_id => $interface) {
-				if (!empty($interface->getNetworkId())) {
-					$ethernetsarray["vnet".$this -> tenant."_".$interface->getNetworkId()][] = "vunl".$this -> tenant."_".$node_id."_".$interface->getId();	
-				}
-			}		
-		}
-		}
-			return $ethernetsarray;
-        }
-*/
-     public function getNodesEthernets($id,$p) {
-		$node =  $this -> nodes[$id];     
+     	public function getNodesEthernets($id,$p) {
+		
+		$node =  $this -> nodes[$id]; 
 		foreach ($p as $interface_id => $interface_link) {
 			$int=$interface_id;
 		}
 		foreach($node -> getEthernets() as $interface_id => $interface) {
-                                if ($interface->getId() == $int) {
-                                        $ethernetsarray["vnet".$this -> tenant."_".$interface->getNetworkId()] = "vunl".$this -> tenant."_".$id."_".$interface->getId();
-                                }
-                        }
-                  return $ethernetsarray;
+                        if ($interface->getId() == $int) {
+                        	//$ethernetsarray["vnet".$this -> tenant."_".$interface->getNetworkId()] = "vunl".$this -> tenant."_".$id."_".$interface->getId();
+                        //$node -> attributes() -> type
+				$ethernetsarray[]="vnet".$this -> tenant."_".$interface->getNetworkId(); //interface
+				$ethernetsarray[]="vunl".$this -> tenant."_".$id."_".$interface->getId(); //ovs bridge
+				$ethernetsarray[]=$node -> getNType(); //nodeType
 			}
+                }
+                return $ethernetsarray;
+	}
 	/**
 	 * Method to get all lab objects.
 	 *

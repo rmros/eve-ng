@@ -40,6 +40,7 @@ chown www-data:www-data /var/run/openvswitch/db.sock
 * Docker support was mostly functional, but made a few small changes to make it function
 * Rewrote handler function for docker to support vnc, telnet and w/custom ports
 * Rewrote capture handler to capture traffic locally to docker node
+* Ability to add links to already running devices (hotadd)
 
 ## Known Issues and todos
 * Need to link the ovs pnet interfaces to physical interfaces

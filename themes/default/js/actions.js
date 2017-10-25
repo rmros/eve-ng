@@ -179,7 +179,9 @@ function ObjectPosUpdate (event ,ui) {
                 groupMove.push(node) 
           });
      }
-     window.dragstop = 0
+     window.dragstop = 0;
+     var zoom = $('#zoomslide').slider("value")/100 ;
+
      if ( groupMove.length > 1 ) window.dragstop = 1 
      if ( event.metaKey || event.e.metaKey || event.ctrlKey || event.e.ctrlKey  ) return
      window.moveCount += 1
@@ -188,9 +190,12 @@ function ObjectPosUpdate (event ,ui) {
          tmp_shapes = [],
          tmp_networks = [];
      $.each( groupMove,  function ( id, node ) {
-          eLeft = Math.round(node.offsetLeft + $('#lab-viewport').scrollLeft())
-          eTop = Math.round(node.offsetTop + $('#lab-viewport').scrollTop())
-          id = node.id
+         //eLeft = Math.round(node.offsetLeft + $('#lab-viewport').scrollLeft())
+          eLeft = Math.round($('#'+node.id).position().left / zoom + $('#lab-viewport').scrollLeft());
+          //eTop = Math.round(node.offsetTop + $('#lab-viewport').scrollTop())
+          eTop = Math.round($('#'+node.id).position().top / zoom + $('#lab-viewport').scrollTop());
+ 
+	 id = node.id
           $('#'+id).addClass('dragstopped')
           if ( id.search('node') != -1 ) {
                logger(1, 'DEBUG: setting' + id + ' position.');
