@@ -516,6 +516,7 @@ class Lab {
 		}
 	}
 
+
 	/**
 	 * Method to delete a network.
 	 *
@@ -900,18 +901,30 @@ class Lab {
          * @return  Array                       Lab ethernets all
          */
      	public function getNodesEthernets($id,$p) {
+		$ethernetsarray=array();
+		$node =  $this -> nodes[$id];
 		
-		$node =  $this -> nodes[$id]; 
-		foreach ($p as $interface_id => $interface_link) {
-			$int=$interface_id;
-		}
+		//foreach ($p as $interface_id => $interface_link) {
+		//	$int=$interface_id;
+		//}
+		$int=key($p); 
 		foreach($node -> getEthernets() as $interface_id => $interface) {
                         if ($interface->getId() == $int) {
-                        	//$ethernetsarray["vnet".$this -> tenant."_".$interface->getNetworkId()] = "vunl".$this -> tenant."_".$id."_".$interface->getId();
-                        //$node -> attributes() -> type
-				$ethernetsarray[]="vnet".$this -> tenant."_".$interface->getNetworkId(); //interface
-				$ethernetsarray[]="vunl".$this -> tenant."_".$id."_".$interface->getId(); //ovs bridge
+				if($interface->getNetworkId() !=0) {
+				//$netId= $interface->getNetworkId();
+				$net = $this -> networks [$interface->getNetworkId()];
+				
+				
+				if (preg_match('/^pnet[0-9]+$/', $net->getNType())) {
+					$ethernetsarray[]=$net->getNType(); //ovs
+				}
+				else {
+					$ethernetsarray[]="vnet".$this -> tenant."_".$interface->getNetworkId(); //ovs
+				}
+				$ethernetsarray[]="vunl".$this -> tenant."_".$id."_".$interface->getId(); //interface
 				$ethernetsarray[]=$node -> getNType(); //nodeType
+				unset($net);
+			}
 			}
                 }
                 return $ethernetsarray;
@@ -1136,7 +1149,16 @@ class Lab {
 		return $this -> save();
 	}
 
+public function disconnectNodeInterface($id,$interface_id) {
+ // Now deconfigure local interface
+              if ($this -> nodes[$id] -> unlinkInterface($interface_id) !== 0) {
+              error_log(date('M d H:i:s ').'ERROR: '.$this -> path .'/'.$this -> filename.'?node='.$id.' '.$GLOBALS['messages'][20035]);
+                                        return 20035;
+                                }
+   return $this -> save();
 
+
+}
         /**
          * Method to Lock  lab 
          *

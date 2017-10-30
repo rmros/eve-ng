@@ -219,6 +219,25 @@ function apiExportLabNodes($lab, $tenant) {
 	return $output;
 }
 
+
+
+function apiDeleteNodeInterface($lab, $id, $p) {
+$interface_id = "vunl0_".$id."_".key($p);
+disconnectNodePort($interface_id);
+$rc = $lab ->disconnectNodeInterface($id,key($p));
+file_put_contents('/opt/unetlab/html/id.txt', print_r($interface_id, true));
+    if ($rc === 0) {
+                $output['code'] = 201;
+                $output['status'] = 'success';
+                $output['message'] = $GLOBALS['messages'][60023];
+        } else {
+                $output['code'] = 400;
+                $output['status'] = 'fail';
+                $output['message'] = $GLOBALS['messages'][$rc];
+        }
+        return $output;
+}
+
 /*
  * Function to get a single lab node.
  *
@@ -236,7 +255,11 @@ function apiEditLabNodeInterfaces($lab, $id, $p) {
 	// todo: should check if node is running and bypass if node is off
 	//$rc2 = connectInterface2($lab -> getNodesEthernets($id,$p));
 	$connectIntA=$lab -> getNodesEthernets($id,$p);
-	connectInterface($connectIntA[0],$connectIntA[1],$connectIntA[2]);	
+	file_put_contents('/opt/unetlab/html/id.txt', print_r($connectIntA, true));
+	file_put_contents('/opt/unetlab/html/lab.txt', print_r($lab , true));
+	if(!empty($connectIntA)) {
+		connectInterface($connectIntA[0],$connectIntA[1],$connectIntA[2]);	
+	}
 	if ($rc === 0) {
 		$output['code'] = 201;
 		$output['status'] = 'success';
@@ -465,7 +488,6 @@ function apiCaptureInterface($lab, $id) {
         // Attach capture interface to docker wireshark node
         $cmd = "ip link set netns ".$pid." ".$dif." name ".$dif."  up 2>&1";
 
-        // $cmd = 'ovs-docker add-port '.$bridge.' '.$sif.' '.$captureNodeName.'';
         exec($cmd, $output, $rc);
         if ($rc == 0) {
                 $output['code'] = 200;

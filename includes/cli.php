@@ -77,6 +77,64 @@ function addNetwork($p) {
  * @param   string  $s                  OVS name
  * @return  int                         0 means ok
  */
+
+function captureInterface($lab, $id) {
+        // Docker capture node container name
+        $config_ini = parse_ini_file('.config');
+        $captureNodeName = $config_ini['docker_container_name'];
+
+        $cmd = 'docker -H=tcp://127.0.0.1:4243 inspect --format "{{ .State.Pid }}" '.$captureNodeName.' 2>&1';
+        exec($cmd, $pida, $rc);
+
+        $pid = $pida[0];
+
+        $uriSplit = explode('/', $_SERVER['REQUEST_URI']);
+        $interface = current(explode('?',end($uriSplit)));
+
+        $sif=$interface;
+        $dif='cap'.$interface;
+
+        // find the bridge which the port uses
+        $cmd = 'ovs-vsctl  port-to-br '.$sif.' 2>&1';
+        exec($cmd, $bridgea, $rc);
+        error_log('INFO: Bridge found '.$cmd.'');
+
+        $bridge = $bridgea[0];
+
+
+        $cmd = 'ovs-vsctl add-port '.$bridge.' '.$dif.' -- set interface '.$dif.' type=internal';
+        exec($cmd, $output, $rc);
+        error_log('INFO: Adding port to capture node '.$cmd.'');
+
+      // create mirror on ovs
+        $cmd = "ovs-vsctl ".
+                "-- --id=@m create mirror name=mirror".$bridge." ".
+                " -- add bridge ".$bridge." mirrors @m ".
+                " -- --id=@".$sif." get port ".$sif." ".
+                " -- set mirror mirror".$bridge." select_src_port=@".$sif." select_dst_port=@".$sif." ".
+                " -- --id=@".$dif." get port ".$dif." ".
+                " -- set mirror mirror".$bridge." output-port=@".$dif." ";
+
+        exec($cmd, $output, $rc);
+
+        // Attach capture interface to docker wireshark node
+        $cmd = "ip link set netns ".$pid." ".$dif." name ".$dif."  up 2>&1";
+
+        exec($cmd, $output, $rc);
+        if ($rc == 0) {
+                $output['code'] = 200;
+                $output['status'] = 'success';
+                $output['message'] = 'Interface Added';
+        }
+        else {
+                $output['code'] = 400;
+                $output['status'] = 'fail';
+                $output['message'] = 'Failed to Add Interface';
+        }
+        return $output;
+
+}
+
 function addOvs($s) {
 
 	if (!isOvs($s)) {
@@ -215,10 +273,11 @@ function checkUsername($i) {
  *
  * @param   string  $n                  Network name
  * @param   string  $p                  Interface name
+ * @param   string  $nodeType                  Node type 
  * @return  int                         0 means ok
  */
 function connectInterface($n, $p, $nodeType) {
-	// Mqke sure bridge exists before adding port
+	// Make sure bridge exists before adding port
 	if (isOvs($n)) {
 		if($nodeType == 'docker') {
 			$cmd = 'ovs-vsctl add-port '.$n.' '.$p.' -- set interface '.$p.' type=internal 2>&1';
@@ -226,7 +285,7 @@ function connectInterface($n, $p, $nodeType) {
 			$cmd = 'ovs-vsctl --may-exist add-port '.$n.' '.$p.' 2>&1';
 		}
 		exec($cmd, $o, $rc);
-		error_log(date('M d H:i:s ').'INFO: starting ovs '.$cmd);
+		error_log(date('M d H:i:s ').'INFO: adding port to ovs '.$cmd);
 		if ($rc == 0) {
 			return 0;
 		} else {
@@ -261,8 +320,12 @@ function delOvs($s) {
 	}
 	return 0;
 }
+function disconnectNodePort($s) {
+	$cmd = 'ovs-vsctl del-port '.$s.' 2>&1';
+        exec($cmd, $o, $rc);
+	return 0;
 
-
+}
 /**
  * Function to delete a TAP interface
  *
@@ -1031,7 +1094,7 @@ function stop($n) {
                                 $net_name = 'vnet'.$tenantNodeId[5].'_'.$interface -> getNetworkId();
                         }
 
-                        // Here we brdige the interfaces
+                        // remove network port from ovs when deleting bridge
                         if ($interface -> getNetworkId() !== 0) {
                                 // Connect interface to network
                                 $cmd = 'ovs-vsctl del-port '.$net_name.' '.$tap_name.'';

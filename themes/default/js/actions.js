@@ -750,8 +750,8 @@ $(document).on('click', '.action-networkdeatach', function (e) {
     logger(1, 'DEBUG: action = action-networkdeatach');
     var node_id = $(this).attr('node-id');
     var interface_id = $(this).attr('interface-id');
-
-    $.when(setNodeInterface(node_id, '', interface_id))
+    var network_id = $(this).attr('network_id');
+    $.when(setNodeInterface(node_id, network_id, interface_id))
         .done(function (values) {
 
             window.location.reload();
@@ -794,7 +794,7 @@ $(document).on('click', '.action-conndelete', function (e) {
      if ( id.search('iface') != -1 ) { // serial or network
         node=id.replace('iface:node','').replace(/:.*/,'') 
         iface=id.replace(/.*:/,'')
-        $.when(setNodeInterface(node,'', iface)).done( function () {
+	$.when(disconnectNodeInterface(node, iface)).done( function () {
            $('.action-labtopologyrefresh').click();
         }).fail(function (message) {
            addModalError(message);

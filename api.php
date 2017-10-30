@@ -977,7 +977,7 @@ $app -> delete('/api/labs/(:path+)', function($path = array()) use ($app, $db) {
 
 	$event = json_decode($app -> request() -> getBody());
 	$s = '/'.implode('/', $path);
-
+	$p = json_decode(json_encode($event), True);    // Reading options from POST/PUT
 	$patterns[0] = '/(.+).unl.*$/';			// Drop after lab file (ending with .unl)
 	$replacements[0] = '$1.unl';
 	$patterns[1] = '/.+\/([0-9]+)\/*.*$/';	// Drop after lab file (ending with .unl)
@@ -1025,6 +1025,8 @@ $app -> delete('/api/labs/(:path+)', function($path = array()) use ($app, $db) {
 		$output = apiDeleteLabNetwork($lab, $id);
 	} else if (preg_match('/^\/[A-Za-z0-9_+\/\\s-]+\.unl\/nodes\/[0-9]+$/', $s)) {
 		$output = apiDeleteLabNode($lab, $id,$tenant);
+  	} else if (preg_match('/^\/[A-Za-z0-9_+\/\\s-]+\.unl\/nodes\/[0-9]+\/interfaces$/', $s)) {
+                $output = apiDeleteNodeInterface($lab, $id, $p);
 	} else if (preg_match('/^\/[A-Za-z0-9_+\/\\s-]+\.unl\/textobjects\/[0-9]+$/', $s)) {
 		$output = apiDeleteLabTextObject($lab, $id);
 	} else if (preg_match('/^\/[A-Za-z0-9_+\/\\s-]+\.unl\/pictures\/[0-9]+$/', $s)) {

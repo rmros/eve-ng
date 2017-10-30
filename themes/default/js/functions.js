@@ -1805,6 +1805,41 @@ function addCapture(nodeName,intName){
 
 }
 
+//disconnect interface from node e.g. pnet or bridge
+function disconnectNodeInterface(node_id,interface_id){
+    var deferred = $.Deferred();
+    var lab_filename = $('#lab-viewport').attr('data-path');
+    var form_data = {};
+    form_data[interface_id] = interface_id;
+    var url = '/api/labs' + lab_filename + '/nodes/' + node_id +'/interfaces';
+    var type = 'DELETE';
+    $.ajax({
+        cache: false,
+        timeout: TIMEOUT,
+        type: type,
+        url: encodeURI(url),
+        dataType: 'json',
+        data: JSON.stringify(form_data),
+        success: function (data) {
+            if (data['status'] == 'success') {
+                logger(1, 'DEBUG: node interface deleted from ovs.');
+                deferred.resolve(data);
+            } else {
+                // Application error
+                logger(1, 'DEBUG: application error (' + data['status'] + ') on ' + type + ' ' + url + ' (' + data['message'] + ').');
+                deferred.reject(data['message']);
+            }
+        },
+        error: function (data) {
+            // Server error
+            var message = getJsonMessage(data['responseText']);
+            logger(1, 'DEBUG: server error (' + data['status'] + ') on ' + type + ' ' + url + '.');
+            logger(1, 'DEBUG: ' + message);
+            deferred.reject(message);
+        }
+    });
+    return deferred.promise();
+}
 
 //set node interface
 function setNodeInterface(node_id,network_id,interface_id){
